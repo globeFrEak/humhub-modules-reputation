@@ -1,9 +1,10 @@
-#Reputation module for HumHub
+#UNDER DEVELOPMENT
+#### Reputation module for HumHub 0.20/1.x (Yii2)
+
 This module integrates a reputation system into HumHub.
-It only works with HumHub 0.11.x
 
 ##About
-__Author:__ Anton Kurnitzky
+__Author:__ Anton Kurnitzky / Philipp Horna (Port to Humhub 1.x)
 
 This module was developed as part of my master thesis at the [Technische Hochschule Nürnberg](http://www.th-nuernberg.eu).
 It's default settings are designed to work for a social network in an educational context. By customizing the settings you can probably use this in any other context too.
@@ -52,13 +53,6 @@ To share your reputation with other users you can enable this per space. If you 
 * Somebody comments the post: How much points should the creator of the original post get if somebody (other) posts a comment. The posts of the comment also gets points according to the setting "Creating posts or comments". **Default** is 3.
 * Daily limit: Set a limit of points a user can reach on a single day. Set this to zero if you don't want to use a daily limit. **Default** is 15.
 * Decrease weighting: This setting decreases the weighting of additional likes, comments, favorites on a post. It divides any additional like by the count of likes. So for example 2 likes with the "Somebody liked the post" setting set to 2 generates only 3 points for the post creator. 2 + 2/2. 5 likes is 2 + 2/2 + 2/3 + 2/4 + 2/5 = 4.56.  The exact formula is: ![equation](http://www.sciweavers.org/tex2img.php?eq=%20%5Csum_1%5En%20%20%5Cfrac%7Bn%7D%7Bweighting%7D%20&bc=White&fc=Black&im=jpg&fs=12&ff=arev&edit=0) The purpose of this setting is to make it really hard to get a high reputation score from just one post. **Default** is Yes.
-
-##CSV Export
-If you use linear as function you just get a csv containing the e-mail addresses of your space members and their reputation score.
-If you use logarithmic you will see an additional dialog.
-![CsvExport](assets/screen5.png)
-Here you can set a weighting that will be multiplied with the percentage score. If you just want to export the percentage value use 1 as weighting.
-Percentage values that are above 100% will be used as 100%.
 
 ##Technical
 ### Update interval
