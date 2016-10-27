@@ -1,4 +1,4 @@
-#UNDER DEVELOPMENT
+#UNDER DEVELOPMENT (Dont use it at the moment!!)
 #### Reputation module for HumHub 0.20/1.x (Yii2)
 
 This module integrates a reputation system into HumHub.
