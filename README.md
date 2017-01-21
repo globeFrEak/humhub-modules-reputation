@@ -1,4 +1,4 @@
-#UNDER DEVELOPMENT (Dont use it at the moment!!)
+#UNDER DEVELOPMENT (Alpha)
 #### Reputation module for HumHub 0.20/1.x (Yii2)
 
 This module integrates a reputation system into HumHub.
@@ -22,7 +22,7 @@ Inside the space menu you will see a new menu called "Hot". This menu provides f
 ![Ranking](assets/screen2.png)
 
 * Hot: The default sorting option. This option prioritizes posts that are younger than on week and have a high number of likes, favorites and comments.
-* Top: This option shows you the best rated posts at the top. 
+* Top: This option shows you the best rated posts at the top.
 * New: Show posts created in the last 36 hours. Sorted by best rating.
 * Rising: Similar to hot. But it prioritizes posts that are younger than 24 hours.
 
@@ -36,7 +36,7 @@ At the bottom you have three actions:
 * Export as CSV: Export data to a CSV file. Useful to import this data to other systems. [More info](#CSV Export)
 
 ### Users
-Inside your Profile menu you will see a new menu "Reputation". 
+Inside your Profile menu you will see a new menu "Reputation".
 ![ProfileReputation](assets/screen4.png)
 Here you see all the spaces you're a member of and that have the reputation module enabled.
 You can see your reputation score and the time this score was last updated.
@@ -57,7 +57,7 @@ To share your reputation with other users you can enable this per space. If you 
 ##Technical
 ### Update interval
 This module uses the [hourly cron job of HumHub](https://github.com/humhub/humhub/blob/master/protected/docs/guide/administration/installation.md#enable-cron-jobs). So make sure you properly configured the cron job on your system. If you want more up to date data you should change the cron schedule.
- 
+
 It also uses [Yii Caching](http://www.yiiframework.com/doc/guide/1.1/en/caching.overview) to improve loading times. The cache is set to 15minutes. So if you open a view (e.g. "User Reptuation") it will use cached data if it's newer than 15 minutes. Otherwise it will refresh the data before displaying the view.
 If you want to see more up to date data you can always click on the "Update" button.
 

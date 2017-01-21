@@ -1,16 +1,17 @@
 {
-  "id": "reputation",
-  "name": "Reputation",
-  "description": "This module integrates a reputation system into HumHub.",
-  "keywords": [
-    "content",
-    "reputation"
-  ],
-  "version": "0.3.1",
-  "authors": [
-    {
-      "name": "Anton Kurnitzky"
+    "id": "reputation",
+    "name": "Reputation",
+    "description": "This Module Integrates A Reputation System Into HumHub. It Works With HumHub 0.20+.",
+    "keywords": ["content", "reputation"],
+    "version": "0.5.0",
+    "time": "2016-11-28",
+    "authors": [
+        {
+            "name": "Anton Kurnitzky",
+            "name": "Philipp Horna"
+        }
+    ],
+    "humhub": {
+        "minVersion": "0.20"
     }
-  ],
-  "time": "2015-06-27"
 }

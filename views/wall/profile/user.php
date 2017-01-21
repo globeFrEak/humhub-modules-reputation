@@ -1,7 +1,7 @@
 <?php
 
 /*
- * @author Anton Kurnitzky
+ * @author Anton Kurnitzky (v0.11) & Philipp Horna (v0.20+)
  */
 
 ?>

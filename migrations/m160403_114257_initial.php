@@ -1,13 +1,10 @@
 <?php
 
-/*
- * @author Anton Kurnitzky
- */
+use yii\db\Migration;
 
-class m150605_115320_initial extends EDbMigration
-{
-    public function up()
-    {
+class m160403_114257_initial extends Migration {
+
+    public function up() {
         $this->createTable('reputation_user', array(
             'id' => 'pk',
             'value' => 'int(11) NOT NULL',
@@ -18,12 +15,23 @@ class m150605_115320_initial extends EDbMigration
             'created_by' => 'int(11) DEFAULT NULL',
             'updated_at' => 'datetime DEFAULT NULL',
             'updated_by' => 'int(11) DEFAULT NULL',
-        ), '');
+                ), '');
     }
 
-    public function down()
-    {
-        echo "m150605_115320_initial does not support migration down.\n";
+    public function down() {
+        echo "m160403_114257_initial cannot be reverted.\n";
+
         return false;
     }
+
+    /*
+      // Use safeUp/safeDown to run migration code within a transaction
+      public function safeUp()
+      {
+      }
+
+      public function safeDown()
+      {
+      }
+     */
 }

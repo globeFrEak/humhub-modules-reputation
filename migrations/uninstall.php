@@ -1,15 +1,14 @@
 <?php
 
-/**
- * Drop created tables on module uninstall
- * @author Anton Kurnitzky
- */
-class uninstall extends ZDbMigration
+use yii\db\Migration;
+
+class uninstall extends Migration
 {
+
     public function up()
     {
         $this->dropTable('reputation_user');
-        $this->dropTable('reputation_content');
+        $this->dropTable('reputation_content');        
     }
 
     public function down()
@@ -17,4 +16,5 @@ class uninstall extends ZDbMigration
         echo "uninstall does not support migration down.\n";
         return false;
     }
+
 }

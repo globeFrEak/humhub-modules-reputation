@@ -1,60 +1,46 @@
 <?php
-/**
- *
- * @property String $reloadUrl is the url to load more entries
- * @property String $startUrl is the url to load the first entries
- * @property String $singleEntryUrl is the url to load a single entry
- *
- * @author Anton Kurnitzky
- */
+use \yii\web\View;
+
+\humhub\modules\content\assets\Stream::register($this);
+
+$this->registerJs('var streamUrl="' . $streamUrl . '"', View::POS_BEGIN);
+
+$jsLoadWall = "r = new Stream('#reputationStream');\n";
+$wallEntryId = (int) Yii::$app->request->getQueryParam('wallEntryId');
+if ($wallEntryId != "") {
+    $jsLoadWall .= "r.showItem(" . $wallEntryId . ");\n";
+} else {
+    $jsLoadWall .= "r.showStream();\n";
+}
+$jsLoadWall .= "currentStream = r;\n";
+$jsLoadWall .= "mainStream = r;\n";
+$jsLoadWall .= "$('#btn-load-more').click(function() { currentStream.loadMore(); })\n";
+$this->registerJs($jsLoadWall, View::POS_READY);
+
+if (Yii::$app->settings->get('horImageScrollOnMobile'))
+    $this->registerJs(new \yii\web\JsExpression("
+if (/Android|webOS|iPhone|iPad|iPod|BlackBerry|BB|PlayBook|IEMobile|Windows Phone|Kindle|Silk|Opera Mini/i.test(navigator.userAgent)) {
+        $('#wallStream').addClass('mobile');
+    }"), View::POS_READY);
+
+$this->registerJsVar('defaultStreamSort', 'h');
 ?>
 
-<?php if ($this->showFilters) { ?>
+<?php if ($this->context->showFilters) { ?>
     <ul class="nav nav-tabs wallFilterPanel" id="filter" style="display: none;">
         <li class=" dropdown">
-            <a class="dropdown-toggle" data-toggle="dropdown"
-               href="#"><?php echo Yii::t('WallModule.widgets_views_stream', 'Filter'); ?> <b
+            <a class="dropdown-toggle" data-toggle="dropdown" href="#"><?php echo Yii::t('ContentModule.widgets_views_stream', 'Filter'); ?> <b
                     class="caret"></b></a>
             <ul class="dropdown-menu">
-                <li><a href="#" class="wallFilter" id="filter_entry_userinvoled"><i
-                            class="fa fa-square-o"></i> <?php echo Yii::t('WallModule.widgets_views_stream', 'Where I´m involved'); ?>
-                    </a>
-                </li>
-                <li><a href="#" class="wallFilter" id="filter_entry_mine"><i
-                            class="fa fa-square-o"></i> <?php echo Yii::t('WallModule.widgets_views_stream', 'Created by me'); ?>
-                    </a></li>
-
-                <!-- post module related -->
-                <li><a href="#" class="wallFilter" id="filter_entry_files"><i
-                            class="fa fa-square-o"></i> <?php echo Yii::t('WallModule.widgets_views_stream', 'Content with attached files'); ?>
-                    </a></li>
-                <li><a href="#" class="wallFilter" id="filter_posts_links"><i
-                            class="fa fa-square-o"></i> <?php echo Yii::t('WallModule.widgets_views_stream', 'Posts with links'); ?>
-                    </a>
-                </li>
-                <li><a href="#" class="wallFilter" id="filter_model_posts"><i
-                            class="fa fa-square-o"></i> <?php echo Yii::t('WallModule.widgets_views_stream', 'Posts only'); ?>
-                    </a></li>
-                <!-- /post module related -->
-
-                <li class="divider"></li>
-
-                <li><a href="#" class="wallFilter" id="filter_entry_archived"><i
-                            class="fa fa-square-o"></i> <?php echo Yii::t('WallModule.widgets_views_stream', 'Include archived posts'); ?>
-                    </a></li>
-                <li><a href="#" class="wallFilter" id="filter_visibility_public"><i
-                            class="fa fa-square-o"></i> <?php echo Yii::t('WallModule.widgets_views_stream', 'Only public posts'); ?>
-                    </a>
-                </li>
-                <li><a href="#" class="wallFilter" id="filter_visibility_private"><i
-                            class="fa fa-square-o"></i> <?php echo Yii::t('WallModule.widgets_views_stream', 'Only private posts'); ?>
-                    </a>
-                </li>
+                <?php foreach ($filters as $filterId => $filterTitle): ?>
+                    <li><a href="#" class="wallFilter" id="<?php echo $filterId; ?>"><i
+                                class="fa fa-square-o"></i> <?php echo $filterTitle; ?></a>
+                    </li>
+                <?php endforeach; ?>
             </ul>
         </li>
         <li class="dropdown">
-            <a class="dropdown-toggle" data-toggle="dropdown"
-               href="#"><?php echo Yii::t('WallModule.widgets_views_stream', 'Sorting'); ?>
+            <a class="dropdown-toggle" data-toggle="dropdown" href="#"><?php echo Yii::t('ContentModule.widgets_views_stream', 'Sorting'); ?>
                 <b class="caret"></b></a>
             <ul class="dropdown-menu">
                 <li><a href="#" class="wallSorting" id="sorting_h"><i
@@ -80,30 +66,24 @@
     <div class="s2_stream" style="display:none">
 
         <div class="s2_streamContent"></div>
-        <div class="loader streamLoader">
-            <div class="sk-spinner sk-spinner-three-bounce">
-                <div class="sk-bounce1"></div>
-                <div class="sk-bounce2"></div>
-                <div class="sk-bounce3"></div>
-            </div>
-        </div>
+        <?php echo \humhub\widgets\LoaderWidget::widget(['cssClass' => 'streamLoader']); ?>
 
         <div class="emptyStreamMessage">
 
-            <div class="placeholder <?php echo $this->messageStreamEmptyCss; ?>">
+            <div class="<?php echo $this->context->messageStreamEmptyCss; ?>">
                 <div class="panel">
                     <div class="panel-body">
-                        <?php echo $this->messageStreamEmpty; ?>
+                        <?php echo $this->context->messageStreamEmpty; ?>
                     </div>
                 </div>
             </div>
 
         </div>
         <div class="emptyFilterStreamMessage">
-            <div class="placeholder <?php echo $this->messageStreamEmptyWithFiltersCss; ?>">
+            <div class="placeholder <?php echo $this->context->messageStreamEmptyWithFiltersCss; ?>">
                 <div class="panel">
                     <div class="panel-body">
-                        <?php echo $this->messageStreamEmptyWithFilters; ?>
+                        <?php echo $this->context->messageStreamEmptyWithFilters; ?>
                     </div>
                 </div>
             </div>
@@ -116,7 +96,7 @@
     <div class="s2_single" style="display: none;">
         <div class="back_button_holder">
             <a href="#"
-               class="singleBackLink btn btn-primary"><?php echo Yii::t('WallModule.widgets_views_stream', 'Back to stream'); ?></a><br><br>
+               class="singleBackLink btn btn-primary"><?php echo Yii::t('ContentModule.widgets_views_stream', 'Back to stream'); ?></a><br><br>
         </div>
         <div class="p_border"></div>
 
@@ -128,6 +108,6 @@
 
 <!-- show "Load More" button on mobile devices -->
 <div class="col-md-12 text-center visible-xs visible-sm">
-    <button id="btn-load-more" class="btn btn-primary btn-lg ">Load more</button>
+    <button id="btn-load-more" class="btn btn-primary btn-lg "><?php echo Yii::t('ContentModule.widgets_views_stream', 'Load more'); ?></button>
     <br/><br/>
 </div>

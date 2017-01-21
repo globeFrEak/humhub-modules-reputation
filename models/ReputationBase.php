@@ -1,15 +1,28 @@
 <?php
 
 /**
+ * Description of humhub\modules\reputation\models\ReputationBase
+ *
+ * @author Anton Kurnitzky (v0.11) & Philipp Horna (v0.20+) */
+
+namespace humhub\modules\reputation\models;
+
+use Yii;
+use humhub\modules\reputation\models\ReputationUser;
+use humhub\modules\reputation\models\ReputationContent;
+use humhub\modules\content\models\Content;
+use humhub\modules\comment\models\Comment;
+use humhub\modules\like\models\Like;
+use humhub\modules\content\components\ContentContainerSettingsManager;
+
+/**
  * Base class for reputation models
  * @author Anton Kurnitzky
  */
-class ReputationBase extends HActiveRecord
-{
+class ReputationBase extends \humhub\components\ActiveRecord {
 
     // Default caching time is 15 minutes
     const CACHE_TIME_SECONDS = 900;
-
     // Default space reputation settings
     const LOGARITHMIC = 0;
     const LINEAR = 1;
@@ -33,21 +46,21 @@ class ReputationBase extends HActiveRecord
      * @param bool $forceUpdate : Ignore cache
      * @return Content[]
      */
-    public function getContentFromSpace($spaceId, $forceUpdate = false)
-    {
+    public function getContentFromSpace($spaceId, $forceUpdate = false) {
+
         $cacheId = 'posts_created_cache' . '_' . $spaceId;
 
-        $spaceContent = Yii::app()->cache->get($cacheId);
+        $spaceContent = Yii::$app->cache->get($cacheId);
 
         if ($spaceContent === false || $forceUpdate === true) {
 
-            $criteria = new CDbCriteria();
-            $criteria->condition = 'space_id=:spaceId AND object_model!=:activity';
-            $criteria->params = array(':spaceId' => $spaceId, ':activity' => 'Activity');
+            $condition = 'contentcontainer_id=:spaceId AND object_model!=:activity';
+            $params = [':spaceId' => $spaceId, ':activity' => 'humhub\modules\activity\models\Activity'];
+            $query = Content::find()
+                    ->where($condition, $params)
+                    ->all();
 
-            $spaceContent = Content::model()->findAll($criteria);
-
-            Yii::app()->cache->set($cacheId, $spaceContent, ReputationContent::CACHE_TIME_SECONDS);
+            Yii::$app->cache->set($cacheId, $spaceContent = $query, ReputationContent::CACHE_TIME_SECONDS);
         }
 
         return $spaceContent;
@@ -63,29 +76,28 @@ class ReputationBase extends HActiveRecord
      * @param bool $forceUpdate : true if cache should be ignored
      * @return Comment[]
      */
-    public function getCommentsFromContent(Content $content, $userId, $cacheId, $countOwnComments = false, $forceUpdate = false)
-    {
-        $comments = Yii::app()->cache->get($cacheId);
+    public function getCommentsFromContent(Content $content, $userId, $cacheId, $countOwnComments = false, $forceUpdate = false) {
+        $comments = Yii::$app->cache->get($cacheId);
 
         if ($comments === false || $forceUpdate === true) {
-            $objectModel = strtolower($content->object_model);
+            $object = $content->object_model;
+            $objectModel = $object::tableName();
             $comments = array();
-
             try {
-                $criteria = new CDbCriteria;
-                $criteria->alias = 'c';
-                $criteria->join = 'LEFT JOIN ' . $objectModel . ' o ON c.object_id = o.id';
-                $criteria->join .= ' LEFT JOIN content ct ON o.id=ct.object_id';
+                $query = Comment::find();
+                $query->leftJoin($objectModel . ' AS o', 'comment.object_id = o.id');
+                $query->leftJoin('content AS ct', 'o.id = ct.object_id');
+
                 if ($countOwnComments === true) {
-                    $criteria->condition = 'ct.id=:contentId AND ct.created_by=:userId AND c.object_model=ct.object_model';
+                    $condition = 'ct.id=:contentId AND ct.created_by=:userId AND comment.object_model=ct.object_model';
                 } else {
-                    $criteria->condition = 'ct.id=:contentId AND ct.created_by=:userId AND c.created_by!=:userId AND c.object_model=ct.object_model';
+                    $condition = 'ct.id=:contentId AND ct.created_by=:userId AND comment.created_by!=:userId AND comment.object_model=ct.object_model';
                 }
-                $criteria->params = array(':contentId' => $content->id, ':userId' => $userId);
+                $params = array(':contentId' => $content->id, ':userId' => $userId);
+                $query->where($condition, $params);
+                $comments = $query->all();
 
-                $comments = Comment::model()->findAll($criteria);
-
-                Yii::app()->cache->set($cacheId, $comments, ReputationBase::CACHE_TIME_SECONDS);
+                Yii::$app->cache->set($cacheId, $query, ReputationBase::CACHE_TIME_SECONDS);
             } catch (Exception $e) {
                 Yii::trace('Couldn\'t count comments from object model: ' . $objectModel);
             }
@@ -99,19 +111,20 @@ class ReputationBase extends HActiveRecord
      * @param $space
      * @return array
      */
-    protected function getSpaceSettings($space)
-    {
-        $function = SpaceSetting::Get($space->id, 'functions', 'reputation', ReputationBase::DEFAULT_FUNCTION);
-        $logarithmBase = SpaceSetting::Get($space->id, 'logarithm_base', 'reputation', ReputationBase::DEFAULT_LOGARITHM_BASE);
-        $create_content = SpaceSetting::Get($space->id, 'create_content', 'reputation', ReputationBase::DEFAULT_CREATE_CONTENT);
-        $smb_likes_content = SpaceSetting::Get($space->id, 'smb_likes_content', 'reputation', ReputationBase::DEFAULT_SMB_LIKES_CONTENT);
-        $smb_favorites_content = SpaceSetting::Get($space->id, 'smb_favorites_content', 'reputation', ReputationBase::DEFAULT_SMB_FAVORITES_CONTENT);
-        $smb_comments_content = SpaceSetting::Get($space->id, 'smb_comments_content', 'reputation', ReputationBase::DEFAULT_SMB_COMMENTS_CONTENT);
-        $daily_limit = SpaceSetting::Get($space->id, 'daily_limit', 'reputation', ReputationBase::DEFAULT_DAILY_LIMIT);
-        $decrease_weighting = SpaceSetting::Get($space->id, 'decrease_weighting', 'reputation', ReputationBase::DEFAULT_DECREASE_WEIGHTING);
-        $lambda_short = SpaceSetting::Get($space->id, 'lambda_short', 'reputation', ReputationBase::DEFAULT_LAMBDA_SHORT);
-        $lambda_long = SpaceSetting::Get($space->id, 'lambda_long', 'reputation', ReputationBase::DEFAULT_LAMBDA_LONG);
-        $ranking_new_period = SpaceSetting::Get($space->id, 'ranking_new_period', 'reputation', ReputationBase::DEFAULT_RANKING_NEW_PERIOD);
+    protected function getSpaceSettings() {
+        $module = Yii::$app->getModule('reputation');
+        
+        $function = $module->settings->space()->get('functions', ReputationBase::DEFAULT_FUNCTION);
+        $logarithmBase = $module->settings->space()->get('logarithm_base', ReputationBase::DEFAULT_LOGARITHM_BASE);
+        $create_content = $module->settings->space()->get('create_content', ReputationBase::DEFAULT_CREATE_CONTENT);
+        $smb_likes_content = $module->settings->space()->get('smb_likes_content', ReputationBase::DEFAULT_SMB_LIKES_CONTENT);
+        $smb_favorites_content = $module->settings->space()->get('smb_favorites_content', ReputationBase::DEFAULT_SMB_FAVORITES_CONTENT);
+        $smb_comments_content = $module->settings->space()->get('smb_comments_content', ReputationBase::DEFAULT_SMB_COMMENTS_CONTENT);
+        $daily_limit = $module->settings->space()->get('daily_limit', ReputationBase::DEFAULT_DAILY_LIMIT);
+        $decrease_weighting = $module->settings->space()->get('decrease_weighting', ReputationBase::DEFAULT_DECREASE_WEIGHTING);
+        $lambda_short = $module->settings->space()->get('cron_job', ReputationBase::DEFAULT_CRON_JOB);
+        $lambda_long = $module->settings->space()->get('lambda_short', ReputationBase::DEFAULT_LAMBDA_SHORT);
+        $ranking_new_period = $module->settings->space()->get('lambda_long', ReputationBase::DEFAULT_LAMBDA_LONG);
 
         $spaceSettings = array($function, $logarithmBase, $create_content, $smb_likes_content,
             $smb_favorites_content, $smb_comments_content, $daily_limit, $decrease_weighting,
@@ -129,30 +142,23 @@ class ReputationBase extends HActiveRecord
      * @param bool $forceUpdate : true if cache should be ignored
      * @return Like[]
      */
-    protected function getLikesFromContent(Content $content, $userId, $cacheId, $forceUpdate = false)
-    {
-        $likes = Yii::app()->cache->get($cacheId);
+    protected function getLikesFromContent(Content $content, $userId, $cacheId, $forceUpdate = false) {
+        $likes = Yii::$app->cache->get($cacheId);
 
         if ($likes === false || $forceUpdate === true) {
-            $objectModel = strtolower($content->object_model);
+            $object = $content->object_model;
+            $objectModel = $object::tableName();
             $likes = array();
-
-            // comments have to be handled otherwise
-            if (strcmp($objectModel, 'comment') == 0) {
-                return array();
-            }
-
             try {
-                $criteria = new CDbCriteria;
-                $criteria->alias = 'l';
-                $criteria->join = 'LEFT JOIN ' . $objectModel . ' p ON l.object_id = p.id';
-                $criteria->join .= ' LEFT JOIN content ct ON p.id=ct.object_id';
-                $criteria->condition = 'ct.id=:contentId AND l.created_by!=:userId AND ct.created_by=:userId AND l.object_model=:objectModel AND ct.object_model=:objectModel';
-                $criteria->params = array(':contentId' => $content->id, ':objectModel' => $objectModel, ':userId' => $userId);
+                $query = Like::find();
+                $query->leftJoin($objectModel . ' AS p', 'like.object_id = p.id');
+                $query->leftJoin('content AS ct', 'p.id = ct.object_id');
+                $condition = 'ct.id=:contentId AND like.created_by!=:userId AND ct.created_by=:userId AND like.object_model=:objectModel AND ct.object_model=:objectModel';
+                $params = array(':contentId' => $content->id, ':objectModel' => $objectModel, ':userId' => $userId);
+                $query->where($condition, $params);
+                $query->all();
 
-                $likes = Like::model()->findAll($criteria);
-
-                Yii::app()->cache->set($cacheId, $likes, ReputationBase::CACHE_TIME_SECONDS);
+                Yii::$app->cache->set($cacheId, $query, ReputationBase::CACHE_TIME_SECONDS);
             } catch (Exception $e) {
                 Yii::trace('Couldn\'t fetch likes from object model: ' . $objectModel);
             }
@@ -170,12 +176,12 @@ class ReputationBase extends HActiveRecord
      * @param bool $forceUpdate : true if cache should be ignored
      * @return Favorite[]
      */
-    protected function getFavoritesFromContent(Content $content, $userId, $cacheId, $forceUpdate = false)
-    {
-        $favorites = Yii::app()->cache->get($cacheId);
+    protected function getFavoritesFromContent(Content $content, $userId, $cacheId, $forceUpdate = false) {
+        $favorites = Yii::$app->cache->get($cacheId);
 
         if ($favorites === false || $forceUpdate === true) {
-            $objectModel = strtolower($content->object_model);
+            $object = $content->object_model;
+            $objectModel = $object::tableName();
             $favorites = array();
 
             // not possible to favorite comments atm
@@ -184,16 +190,16 @@ class ReputationBase extends HActiveRecord
             }
 
             try {
-                $criteria = new CDbCriteria;
-                $criteria->alias = 'f';
-                $criteria->join = 'LEFT JOIN ' . $objectModel . ' p ON f.object_id = p.id';
-                $criteria->join .= ' LEFT JOIN content ct ON p.id=ct.object_id';
-                $criteria->condition = 'ct.id=:contentId AND f.created_by!=:userId AND ct.created_by=:userId AND f.object_model=:objectModel AND ct.object_model=:objectModel';
-                $criteria->params = array(':contentId' => $content->id, ':objectModel' => $objectModel, ':userId' => $userId);
+                $query = Favorite::find();
+                $query->leftJoin($objectModel . ' AS p', 'favorite.object_id = p.id');
+                $query->leftJoin('content AS ct', 'p.id = ct.object_id');
 
-                $favorites = Favorite::model()->findAll($criteria);
+                $condition = 'ct.id=:contentId AND favorite.created_by!=:userId AND ct.created_by=:userId AND favorite.object_model=:objectModel AND ct.object_model=:objectModel';
+                $params = array(':contentId' => $content->id, ':objectModel' => $objectModel, ':userId' => $userId);
+                $query->where($condition, $params);
+                $query->all();
 
-                Yii::app()->cache->set($cacheId, $favorites, ReputationBase::CACHE_TIME_SECONDS);
+                Yii::$app->cache->set($cacheId, $query, ReputationBase::CACHE_TIME_SECONDS);
             } catch (Exception $e) {
                 Yii::trace('Couldn\'t fetch favorites from object model: ' . $objectModel);
             }
@@ -201,4 +207,5 @@ class ReputationBase extends HActiveRecord
 
         return $favorites;
     }
+
 }

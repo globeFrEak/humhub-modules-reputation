@@ -1,6 +1,18 @@
 <?php
 
 /**
+ * Description of humhub\modules\reputation\models\ReputationContent
+ *
+ * @author Anton Kurnitzky (v0.11) & Philipp Horna (v0.20+) */
+
+namespace humhub\modules\reputation\models;
+
+use Yii;
+use humhub\modules\content\models\Content;
+use humhub\modules\space\models\Space;
+use \DateTime;
+
+/**
  * This is the model class for table "reputation_content".
  *
  * The followings are the available columns in table 'reputation_content':
@@ -16,28 +28,27 @@
  *
  * @author Anton Kurnitzky
  */
-class ReputationContent extends ReputationBase
-{
+class ReputationContent extends ReputationBase {
+
     const CACHE_TIME_SECONDS = 900; // Default caching time is 15minutes
 
     /**
-     * @return string the associated database table name
+     * @inheritdoc
      */
-    public function tableName()
-    {
+
+    public static function tableName() {
         return 'reputation_content';
     }
 
     /**
      * @return array validation rules for model attributes.
      */
-    public function rules()
-    {
+    public function rules() {
         // NOTE: you should only define rules for those attributes that
         // will receive user inputs.
         return array(
             array('score, score_short, score_long, content_id', 'required'),
-            array('score, content_id, created_by, updated_by', 'numerical', 'integerOnly' => true),
+            array('score, content_id, created_by, updated_by', 'integerOnly' => true),
             array('created_at, updated_at', 'safe'),
         );
     }
@@ -45,8 +56,7 @@ class ReputationContent extends ReputationBase
     /**
      * @return array relational rules.
      */
-    public function relations()
-    {
+    public function relations() {
         return array(
             'content' => array(self::BELONGS_TO, 'Content', 'content_id'),
         );
@@ -55,8 +65,7 @@ class ReputationContent extends ReputationBase
     /**
      * @return array customized attribute labels (name=>label)
      */
-    public function attributeLabels()
-    {
+    public function attributeLabels() {
         return array(
             'id' => 'ID',
             'score' => 'Score',
@@ -76,41 +85,40 @@ class ReputationContent extends ReputationBase
      * @param $space : The space where the content should be updated
      * @param bool $forceUpdate : Ignore cache
      */
-    public function updateContentReputation($space, $forceUpdate = false)
-    {
+    public function updateContentReputation($space, $forceUpdate = false) {
         $spaceId = $space->id;
 
-        $spaceContent = $this->getContentFromSpace($spaceId);
-        $spaceSettings = $this->getSpaceSettings($space);
+        $spaceContent = ReputationBase::getContentFromSpace($spaceId);
+        $spaceSettings = ReputationBase::getSpaceSettings();
         $lambda_short = $spaceSettings[8];
         $lambda_long = $spaceSettings[9];
 
         foreach ($spaceContent as $content) {
 
             $cacheId = 'reputation_space_content' . '_' . $spaceId . '_' . $content->id;
-            $contentReputation = Yii::app()->cache->get($cacheId);
+            $contentReputation = Yii::$app->cache->get($cacheId);
 
             if ($contentReputation === false || $forceUpdate === true) {
 
                 // get all reputation_content objects from this space
-                $attributes = array('content_id' => $content->id);
-                $contentReputation = ReputationContent::model()->findByAttributes($attributes);
+                $params = array('content_id' => $content->id);
 
-                if ($contentReputation == null && !Yii::app()->user->isGuest) {
+                $contentReputation = ReputationContent::findOne($params);
+
+                if ($contentReputation == null && !Yii::$app->user->isGuest) {
                     // Create new reputation_content entry
                     $contentReputation = new ReputationContent();
                     $contentReputation->content_id = $content->id;
                 }
-                $score = $this->calculateContentReputationScore($content, $space, $forceUpdate);
+                $score = ReputationContent::calculateContentReputationScore($content, $space, $forceUpdate);
                 $contentReputation->score = $score;
-                $timePassed = $this->getTimeInHoursSinceContentCreation($content->created_at);
-                $contentReputation->score_long = $this->getDecayedScore($score, $timePassed, $lambda_long);
-                $contentReputation->score_short = $this->getDecayedScore($score, $timePassed, $lambda_short);
+                $timePassed = ReputationContent::getTimeInHoursSinceContentCreation($content->created_at);
+                $contentReputation->score_long = ReputationContent::getDecayedScore($score, $timePassed, $lambda_long);
+                $contentReputation->score_short = ReputationContent::getDecayedScore($score, $timePassed, $lambda_short);
                 $contentReputation->updated_at = date('Y-m-d H:i:s');
+                $contentReputation->save(false);
 
-                $contentReputation->save();
-
-                Yii::app()->cache->set($cacheId, $contentReputation, ReputationBase::CACHE_TIME_SECONDS);
+                Yii::$app->cache->set($cacheId, $contentReputation, ReputationBase::CACHE_TIME_SECONDS);
             }
         }
     }
@@ -120,12 +128,13 @@ class ReputationContent extends ReputationBase
      * Please note that you should have this exact method in all your CActiveRecord descendants!
      * @param string $className active record class name.
      * @return ReputationContent the static model class
+     *
+      public static function model($className = __CLASS__)
+      {
+      return parent::model($className);
+      }
+     * 
      */
-    public static function model($className = __CLASS__)
-    {
-        return parent::model($className);
-    }
-
     /*
      * Calculate the reputation score for all content objects inside this space
      * Use the count of likes, favorites and comments and the reputation settings to calculate this
@@ -133,29 +142,27 @@ class ReputationContent extends ReputationBase
      * @param $content
      * @param $space
      */
-    public function calculateContentReputationScore(Content $content, Space $space, $forceUpdate)
-    {
+    public function calculateContentReputationScore(Content $content, Space $space, $forceUpdate) {
         // Get space settings. Use default values if space module settings are not configured yet
-        $spaceSettings = $this->getSpaceSettings($space);
+        $spaceSettings = ReputationBase::getSpaceSettings();
 
         $cacheId = 'likes_earned_cache_' . $content->id;
-        $likes = $this->getLikesFromContent($content, $content->created_by, $cacheId, $forceUpdate);
+        $likes = ReputationBase::getLikesFromContent($content, $content->created_by, $cacheId, $forceUpdate);
 
         if ($space->isModuleEnabled('favorite')) {
             $scoreCount = 1;
             // now count the favorites this content earned from other users
             $cacheId = 'favorites_earned_cache_' . $content->id;
-            $favorites = $this->getFavoritesFromContent($content, $content->created_by, $cacheId, $forceUpdate);
+            $favorites = ReputationBase::getFavoritesFromContent($content, $content->created_by, $cacheId, $forceUpdate);
         } else {
             $favorites = array();
         }
 
         $cacheId = 'comments_earned_cache_' . $content->id;
-        $comments = $this->getCommentsFromContent($content, $content->user_id, $cacheId, true, $forceUpdate);
+        $comments = ReputationBase::getCommentsFromContent($content, $content->created_by, $cacheId, true, $forceUpdate);
 
         return (count($likes) * $spaceSettings[3] + count($favorites) * $spaceSettings[4] + count($comments) * $spaceSettings[5]);
     }
-
 
     /**
      * Calculate time in hours since the content was created
@@ -163,8 +170,7 @@ class ReputationContent extends ReputationBase
      * @param $createdAt : The creation time of the content object
      * @return int: Time in hours since content was created
      */
-    private function getTimeInHoursSinceContentCreation($createdAt)
-    {
+    private function getTimeInHoursSinceContentCreation($createdAt) {
         $now = new DateTime();
         $createdTime = new DateTime($createdAt);
         $timeSinceCreation = round(($now->getTimestamp() - $createdTime->getTimestamp()) / 3600, 2, PHP_ROUND_HALF_UP);
@@ -190,9 +196,9 @@ class ReputationContent extends ReputationBase
      * @param    float    Damping factor.
      * @return    float    Decayed score.
      */
-    public function getDecayedScore($score, $age, $lambda = 0)
-    {
+    public function getDecayedScore($score, $age, $lambda = 0) {
         // Actual calculation: exp(-lambda * t^2)
         return ($score + 1) * exp(-$lambda * $age * $age);
     }
+
 }
