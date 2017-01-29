@@ -5,15 +5,15 @@ use \yii\web\View;
 
 $this->registerJs('var streamUrl="' . $streamUrl . '"', View::POS_BEGIN);
 
-$jsLoadWall = "r = new Stream('#reputationStream');\n";
+$jsLoadWall = "s = new Stream('#wallStream');\n";
 $wallEntryId = (int) Yii::$app->request->getQueryParam('wallEntryId');
 if ($wallEntryId != "") {
-    $jsLoadWall .= "r.showItem(" . $wallEntryId . ");\n";
+    $jsLoadWall .= "s.showItem(" . $wallEntryId . ");\n";
 } else {
-    $jsLoadWall .= "r.showStream();\n";
+    $jsLoadWall .= "s.showStream();\n";
 }
-$jsLoadWall .= "currentStream = r;\n";
-$jsLoadWall .= "mainStream = r;\n";
+$jsLoadWall .= "currentStream = s;\n";
+$jsLoadWall .= "mainStream = s;\n";
 $jsLoadWall .= "$('#btn-load-more').click(function() { currentStream.loadMore(); })\n";
 $this->registerJs($jsLoadWall, View::POS_READY);
 

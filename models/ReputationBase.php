@@ -13,7 +13,6 @@ use humhub\modules\reputation\models\ReputationContent;
 use humhub\modules\content\models\Content;
 use humhub\modules\comment\models\Comment;
 use humhub\modules\like\models\Like;
-use humhub\modules\content\components\ContentContainerSettingsManager;
 
 /**
  * Base class for reputation models

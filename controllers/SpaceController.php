@@ -2,7 +2,7 @@
 
 /**
  * Description of humhub\modules\reputation\controllers\WallController
- * * The wall controller for content reputation
+ * * The SpaceController for content reputation
  * * Show different sorting options to get a better overview over popular posts
  *
  * @author Anton Kurnitzky (v0.11) & Philipp Horna (v0.20+) */
@@ -12,7 +12,7 @@ namespace humhub\modules\reputation\controllers;
 use humhub\modules\reputation\models\ReputationContent;
 use humhub\modules\content\components\ContentContainerController;
 
-class WallController extends ContentContainerController {
+class SpaceController extends ContentContainerController {
 
     /**
      * @inheritdoc
@@ -28,7 +28,7 @@ class WallController extends ContentContainerController {
     }
 
     /**
-     * Shows the reputation_content wall
+     * Shows the reputation_content space
      */
     public function actionIndex() {
         $forceUpdate = false;

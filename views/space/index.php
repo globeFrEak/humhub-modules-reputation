@@ -11,7 +11,7 @@ if ($canCreatePosts) {
 
 echo \humhub\modules\reputation\widgets\ReputationStream::widget(array(
     'contentContainer' => $space,
-    'streamAction' => '/reputation/wall/stream',
+    'streamAction' => '/reputation/space/stream',
     'messageStreamEmptyWithFiltersCss' => $emptyMessage,
     'messageStreamEmptyWithFilters' => ($canCreatePosts) ? 'placeholder-empty-stream' : '',
 ));
