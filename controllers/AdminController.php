@@ -12,14 +12,14 @@ use humhub\modules\reputation\models\ReputationUser;
 use humhub\modules\reputation\models\ReputationContent;
 use humhub\modules\reputation\models\ReputationBase;
 use humhub\modules\reputation\models\SpaceSettings;
-use humhub\modules\space\modules\manage\components\Controller;
+use humhub\modules\content\components\ContentContainerController;
 
 /**
  * All user reputation actions a admin can use and see
  *
  * @author Anton Kurnitzky
  */
-class AdminController extends Controller {
+class AdminController extends ContentContainerController {
 
     /** access level of the user currently logged in. 0 -> no write access / 1 -> create links and edit own links / 2 -> full write access. * */
     public $accessLevel = 0;
@@ -62,8 +62,8 @@ class AdminController extends Controller {
      */
 
     public function beforeAction($action) {
-        if (!\Yii::$app->getUser()->isAdmin()) {
-            throw new CHttpException(403, 'Access denied - Space Administrator only!');
+        if (!$this->getSpace()->isAdmin()) {
+            throw new HttpException(403, 'Access denied - Space Administrator only!');
         }
         return parent::beforeAction($action);
     }
@@ -89,23 +89,23 @@ class AdminController extends Controller {
         $query = ReputationUser::find();
         $query->where('space_id=:spaceId', $params);
         $query->orderBy('reputation_user.space_id ASC');
-        $reputations = $query->all();       
+        $reputations = $query->all();
 
         $itemCount = count($reputations);
 
-        $pagination = new \yii\data\Pagination(['totalCount' => $itemCount]);     
+        $pagination = new \yii\data\Pagination(['totalCount' => $itemCount]);
 
         $module = Yii::$app->getModule('reputation');
         $function = $module->settings->space()->get('functions', ReputationBase::DEFAULT_FUNCTION);
 
-        $lastUpdatedBefore = $this->GetLastUpdateTimeInMinutes($reputations);        
+        $lastUpdatedBefore = $this->GetLastUpdateTimeInMinutes($reputations);
 
         return $this->render('index', array(
-            'function' => $function,
-            'space' => $space,
-            'reputations' => $reputations,
-            'pagination' => $pagination,
-            'lastUpdatedBefore' => $lastUpdatedBefore,            
+                    'function' => $function,
+                    'space' => $space,
+                    'reputations' => $reputations,
+                    'pagination' => $pagination,
+                    'lastUpdatedBefore' => $lastUpdatedBefore,
         ));
     }
 
@@ -131,7 +131,7 @@ class AdminController extends Controller {
      */
     public function actionSpaceSettings() {
 
-        $space = $this->getSpace();
+        $space = $this->contentContainer;
         $module = Yii::$app->getModule('reputation');
         $form = new SpaceSettings();
 
@@ -152,7 +152,7 @@ class AdminController extends Controller {
 
     public function actionSpaceSettingsSubmit() {
 
-        $space = $this->getSpace();
+        $space = $this->contentContainer;
         $module = Yii::$app->getModule('reputation');
         $form = new SpaceSettings();
         $form->load(Yii::$app->request->post());
