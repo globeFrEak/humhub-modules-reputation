@@ -11,7 +11,6 @@ use humhub\modules\reputation\models\ReputationBase;
 use humhub\modules\reputation\models\ReputationUser;
 use humhub\modules\reputation\models\ReputationContent;
 use humhub\modules\space\behaviors\SpaceModelModules;
-use humhub\modules\space\modules\manage\widgets\DefaultMenu;
 
 class Events extends \yii\base\Object {
 
@@ -42,7 +41,7 @@ class Events extends \yii\base\Object {
      * @param type $event
      */
     public static function onUserDelete($event) {
-        foreach (ReputationUser::findAllByAttributes(array('user_id' => $event->sender->id)) as $reputationUser) {
+        foreach (ReputationUser::findAll(['user_id' => $event->sender->id]) as $reputationUser) {
             $reputationUser->delete();
         }
     }
@@ -53,7 +52,7 @@ class Events extends \yii\base\Object {
      * @param type $event
      */
     public static function onSpaceMembershipDelete($event) {
-        foreach (ReputationUser::findAllByAttributes(array('user_id' => $event->sender->user_id, 'space_id' => $event->sender->space_id)) as $reputationUser) {
+        foreach (ReputationUser::findAll(['user_id' => $event->sender->user_id, 'space_id' => $event->sender->space_id]) as $reputationUser) {
             $reputationUser->delete();
         }
     }
@@ -64,7 +63,7 @@ class Events extends \yii\base\Object {
      * @param type $event
      */
     public static function onSpaceDelete($event) {
-        foreach (ReputationUser::findAllByAttributes(array('space_id' => $event->sender->id)) as $reputationSpace) {
+        foreach (ReputationUser::findAll(['space_id' => $event->sender->id]) as $reputationSpace) {
             $reputationSpace->delete();
         }
     }
@@ -75,7 +74,7 @@ class Events extends \yii\base\Object {
      * @param type $event
      */
     public static function onContentDelete($event) {
-        foreach (ReputationContent::findAllByAttributes(array('object_id' => $event->sender->id)) as $reputationContent) {
+        foreach (ReputationContent::findAll(['content_id' => $event->sender->id]) as $reputationContent) {
             $reputationContent->delete();
         }
     }
@@ -122,7 +121,7 @@ class Events extends \yii\base\Object {
         if ($event->sender->space !== null && $event->sender->space->isModuleEnabled('reputation') && $event->sender->space->isMember()) {
             $event->sender->addItem(array(
                 'label' => Yii::t('ReputationModule.base', 'Hot'),
-                'url' => $event->sender->space->createUrl('/reputation/wall'),
+                'url' => $event->sender->space->createUrl('/reputation/space'),
                 'icon' => '<i class="fa fa-fire"></i>',
                 'isActive' => (Yii::$app->controller->module && Yii::$app->controller->module->id == 'reputation'),
                 'group' => 'modules',

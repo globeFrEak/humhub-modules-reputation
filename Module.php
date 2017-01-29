@@ -9,6 +9,8 @@ use humhub\modules\space\models\Space;
 use humhub\modules\user\models\User;
 use humhub\modules\content\components\ContentContainerActiveRecord;
 use humhub\modules\content\components\ContentContainerModule;
+use humhub\modules\reputation\models\ReputationUser;
+use humhub\modules\reputation\models\ReputationContent;
 
 class Module extends ContentContainerModule {
 
