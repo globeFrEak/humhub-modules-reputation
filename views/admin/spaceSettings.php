@@ -44,7 +44,7 @@ use humhub\modules\reputation\models\ReputationBase;
             <div class="form-group" id="logarithm_base" style="display:none">
                 <?php
                 echo $form->
-                        field($model, 'logarithmBase')->
+                        field($model, 'logarithm_base')->
                         label(Yii::t('ReputationModule.forms_adminController_settings', 'Logarithm base'))->
                         textInput(array('class' => 'form-control'));
                 ?>
@@ -53,7 +53,7 @@ use humhub\modules\reputation\models\ReputationBase;
             <div class="form-group" id="logarithm_base">        
                 <?php
                 echo $form->
-                        field($model, 'logarithmBase')->
+                        field($model, 'logarithm_base')->
                         label(Yii::t('ReputationModule.forms_adminController_settings', 'Logarithm base'))->
                         textInput(array('class' => 'form-control'));
                 ?>          

@@ -13,6 +13,8 @@ use humhub\modules\reputation\models\ReputationContent;
 use humhub\modules\content\models\Content;
 use humhub\modules\comment\models\Comment;
 use humhub\modules\like\models\Like;
+use humhub\modules\content\models\ContentContainerSetting;
+use humhub\modules\space\models\Setting;
 
 /**
  * Base class for reputation models
@@ -41,27 +43,23 @@ class ReputationBase extends \humhub\components\ActiveRecord {
     /**
      * Returns all content objects (posts, polls, etc.) from this space
      *
-     * @param $spaceId : The id of the space
+     * @param $space : The space Object
      * @param bool $forceUpdate : Ignore cache
      * @return Content[]
      */
-    public function getContentFromSpace($spaceId, $forceUpdate = false) {
-
-        $cacheId = 'posts_created_cache' . '_' . $spaceId;
-
+    public function getContentFromSpace($space, $forceUpdate = false) {
+        $cacheId = 'posts_created_cache' . '_' . $space->id;
         $spaceContent = Yii::$app->cache->get($cacheId);
-
         if ($spaceContent === false || $forceUpdate === true) {
 
             $condition = 'contentcontainer_id=:spaceId AND object_model!=:activity';
-            $params = [':spaceId' => $spaceId, ':activity' => 'humhub\modules\activity\models\Activity'];
+            $params = [':spaceId' => $space->id, ':activity' => 'humhub\modules\activity\models\Activity'];
             $query = Content::find()
                     ->where($condition, $params)
                     ->all();
 
             Yii::$app->cache->set($cacheId, $spaceContent = $query, ReputationContent::CACHE_TIME_SECONDS);
         }
-
         return $spaceContent;
     }
 
@@ -106,29 +104,37 @@ class ReputationBase extends \humhub\components\ActiveRecord {
     }
 
     /**
-     * Return an array with all space settings
-     * @param $space
+     * Return an array with all space settings 
+     * @param $space Object 
      * @return array
      */
-    protected function getSpaceSettings() {
-        $module = Yii::$app->getModule('reputation');
-        
-        $function = $module->settings->space()->get('functions', ReputationBase::DEFAULT_FUNCTION);
-        $logarithmBase = $module->settings->space()->get('logarithm_base', ReputationBase::DEFAULT_LOGARITHM_BASE);
-        $create_content = $module->settings->space()->get('create_content', ReputationBase::DEFAULT_CREATE_CONTENT);
-        $smb_likes_content = $module->settings->space()->get('smb_likes_content', ReputationBase::DEFAULT_SMB_LIKES_CONTENT);
-        $smb_favorites_content = $module->settings->space()->get('smb_favorites_content', ReputationBase::DEFAULT_SMB_FAVORITES_CONTENT);
-        $smb_comments_content = $module->settings->space()->get('smb_comments_content', ReputationBase::DEFAULT_SMB_COMMENTS_CONTENT);
-        $daily_limit = $module->settings->space()->get('daily_limit', ReputationBase::DEFAULT_DAILY_LIMIT);
-        $decrease_weighting = $module->settings->space()->get('decrease_weighting', ReputationBase::DEFAULT_DECREASE_WEIGHTING);
-        $lambda_short = $module->settings->space()->get('cron_job', ReputationBase::DEFAULT_CRON_JOB);
-        $lambda_long = $module->settings->space()->get('lambda_short', ReputationBase::DEFAULT_LAMBDA_SHORT);
-        $ranking_new_period = $module->settings->space()->get('lambda_long', ReputationBase::DEFAULT_LAMBDA_LONG);
+    protected function getSpaceSettings($space) {
+        $getSettings = ContentContainerSetting::findAll(['module_id' => 'reputation', 'contentcontainer_id' => $space->wall_id]);
+        $spaceSettings = [];
 
-        $spaceSettings = array($function, $logarithmBase, $create_content, $smb_likes_content,
-            $smb_favorites_content, $smb_comments_content, $daily_limit, $decrease_weighting,
-            $lambda_short, $lambda_long, $ranking_new_period);
+        if (count($getSettings) > 0) {
+            foreach ($getSettings as $setting) {
+                $spaceSettings[$setting['name']] = $setting['value'];
+            }
+        } else {
+            $spaceSettings = [
+                'functions' => self::DEFAULT_FUNCTION,
+                'logarithm_base' => self::DEFAULT_LOGARITHM_BASE,
+                'create_content' => self::DEFAULT_CREATE_CONTENT,
+                'smb_likes_content' => self::DEFAULT_SMB_LIKES_CONTENT,
+                'smb_likes_content' => self::DEFAULT_SMB_FAVORITES_CONTENT,
+                'smb_favorites_content' => self::DEFAULT_SMB_COMMENTS_CONTENT,
+                'smb_comments_content' => self::DEFAULT_SMB_COMMENTS_CONTENT,
+                'daily_limit' => self::DEFAULT_DAILY_LIMIT,
+                'decrease_weighting' => self::DEFAULT_DECREASE_WEIGHTING,
+                'cron_job' => self::DEFAULT_CRON_JOB,
+                'lambda_long' => self::DEFAULT_LAMBDA_SHORT,
+                'lambda_short' => self::DEFAULT_LAMBDA_LONG];
 
+            foreach ($spaceSettings as $name => $value) {                
+                Setting::Set($space, $name, $value, 'reputation');
+            }            
+        }
         return $spaceSettings;
     }
 

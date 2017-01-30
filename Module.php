@@ -12,17 +12,15 @@ use humhub\modules\content\components\ContentContainerModule;
 use humhub\modules\reputation\models\ReputationUser;
 use humhub\modules\reputation\models\ReputationContent;
 
-class Module extends ContentContainerModule {
-
-    public $controllerNamespace = 'humhub\modules\reputation\controllers';
+class Module extends ContentContainerModule {   
 
     /**
      * @inheritdoc
      */
     public function getContentContainerTypes() {
         return [
-            User::className(),
             Space::className(),
+            User::className(),
         ];
     }
 
@@ -30,8 +28,6 @@ class Module extends ContentContainerModule {
      * @inheritdoc
      */
     public function enableContentContainer(ContentContainerActiveRecord $container) {
-
-        $container->setSetting('enableWidget', 0, 'reputation');
         parent::enableContentContainer($container);
         if ($container instanceof Space) {
             ReputationUser::updateUserReputation($container, true);

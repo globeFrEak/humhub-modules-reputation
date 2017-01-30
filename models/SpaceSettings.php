@@ -12,7 +12,7 @@ use Yii;
 class SpaceSettings extends \yii\base\Model
 {
     public $functions;
-    public $logarithmBase;
+    public $logarithm_base;
     public $create_content;
     public $smb_likes_content;
     public $smb_favorites_content;
@@ -31,8 +31,8 @@ class SpaceSettings extends \yii\base\Model
     {
         return array(
             array('functions', 'required'),
-            array('logarithmBase', 'required'),
-            array('logarithmBase', 'number', 'min' => 1),
+            array('logarithm_base', 'required'),
+            array('logarithm_base', 'number', 'min' => 1),
             array('create_content', 'required'),
             array('create_content', 'number', 'min' => 0),
             array('smb_likes_content', 'required'),
@@ -61,7 +61,7 @@ class SpaceSettings extends \yii\base\Model
     {
         return array(
             'functions' => Yii::t('ReputationModule.forms_adminController_settings', 'Function'),
-            'logarithmBase' => Yii::t('ReputationModule.forms_adminController_settings', 'Logarithm base'),
+            'logarithm_base' => Yii::t('ReputationModule.forms_adminController_settings', 'Logarithm base'),
             'create_content' => Yii::t('ReputationModule.forms_adminController_settings', 'Creating posts or comments'),
             'smb_likes_content' => Yii::t('ReputationModule.forms_adminController_settings', 'Somebody liked the post'),
             'smb_favorites_content' => Yii::t('ReputationModule.forms_adminController_settings', 'Somebody marked the post as favorite'),

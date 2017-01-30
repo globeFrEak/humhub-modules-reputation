@@ -36,15 +36,15 @@
 
         <?php if ($model->functions == '1'): ?>
             <div class="form-group" id="logarithm_base" style="display:none">
-                <?php echo $form->labelEx($model, 'logarithmBase'); ?>
-                <?php echo $form->textField($model, 'logarithmBase', array('class' => 'form-control')); ?>
-                <?php echo $form->error($model, 'logarithmBase'); ?>
+                <?php echo $form->labelEx($model, 'logarithm_base'); ?>
+                <?php echo $form->textField($model, 'logarithm_base', array('class' => 'form-control')); ?>
+                <?php echo $form->error($model, 'logarithm_base'); ?>
             </div>
         <?php else: ?>
             <div class="form-group" id="logarithm_base">
-                <?php echo $form->labelEx($model, 'logarithmBase'); ?>
-                <?php echo $form->textField($model, 'logarithmBase', array('class' => 'form-control')); ?>
-                <?php echo $form->error($model, 'logarithmBase'); ?>
+                <?php echo $form->labelEx($model, 'logarithm_base'); ?>
+                <?php echo $form->textField($model, 'logarithm_base', array('class' => 'form-control')); ?>
+                <?php echo $form->error($model, 'logarithm_base'); ?>
             </div>
         <?php endif ?>
 

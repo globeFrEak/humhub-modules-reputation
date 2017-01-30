@@ -131,12 +131,12 @@ class AdminController extends ContentContainerController {
      */
     public function actionSpaceSettings() {
 
-        $space = $this->contentContainer;
+        $space = $this->getSpace();
         $module = Yii::$app->getModule('reputation');
         $form = new SpaceSettings();
 
         $form->functions = $module->settings->space()->get('functions', ReputationBase::DEFAULT_FUNCTION);
-        $form->logarithmBase = $module->settings->space()->get('logarithm_base', ReputationBase::DEFAULT_LOGARITHM_BASE);
+        $form->logarithm_base = $module->settings->space()->get('logarithm_base', ReputationBase::DEFAULT_LOGARITHM_BASE);
         $form->create_content = $module->settings->space()->get('create_content', ReputationBase::DEFAULT_CREATE_CONTENT);
         $form->smb_likes_content = $module->settings->space()->get('smb_likes_content', ReputationBase::DEFAULT_SMB_LIKES_CONTENT);
         $form->smb_favorites_content = $module->settings->space()->get('smb_favorites_content', ReputationBase::DEFAULT_SMB_FAVORITES_CONTENT);
@@ -152,14 +152,14 @@ class AdminController extends ContentContainerController {
 
     public function actionSpaceSettingsSubmit() {
 
-        $space = $this->contentContainer;
+        $space = $this->getSpace();
         $module = Yii::$app->getModule('reputation');
         $form = new SpaceSettings();
         $form->load(Yii::$app->request->post());
 
         if ($form->validate()) {
             $form->functions = $module->settings->space()->set('functions', $form->functions);
-            $form->logarithmBase = $module->settings->space()->set('logarithm_base', $form->logarithmBase);
+            $form->logarithm_base = $module->settings->space()->set('logarithm_base', $form->logarithm_base);
             $form->create_content = $module->settings->space()->set('create_content', $form->create_content);
             $form->smb_likes_content = $module->settings->space()->set('smb_likes_content', $form->smb_likes_content);
             $form->smb_favorites_content = $module->settings->space()->set('smb_favorites_content', $form->smb_favorites_content);
@@ -176,7 +176,7 @@ class AdminController extends ContentContainerController {
             $this->redirect(['/reputation/admin/space-settings', 'sguid' => $space->guid]);
         } else {
             $form->functions = $module->settings->space()->get('functions', ReputationBase::DEFAULT_FUNCTION);
-            $form->logarithmBase = $module->settings->space()->get('logarithm_base', ReputationBase::DEFAULT_LOGARITHM_BASE);
+            $form->logarithm_base = $module->settings->space()->get('logarithm_base', ReputationBase::DEFAULT_LOGARITHM_BASE);
             $form->create_content = $module->settings->space()->get('create_content', ReputationBase::DEFAULT_CREATE_CONTENT);
             $form->smb_likes_content = $module->settings->space()->get('smb_likes_content', ReputationBase::DEFAULT_SMB_LIKES_CONTENT);
             $form->smb_favorites_content = $module->settings->space()->get('smb_favorites_content', ReputationBase::DEFAULT_SMB_FAVORITES_CONTENT);

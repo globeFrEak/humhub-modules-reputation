@@ -131,11 +131,11 @@ class ReputationUser extends ReputationBase {
      * @return int: User reputation score inside this space
      */
     private function calculateUserReputationScore($userId, $space, $forceUpdate = false) {
-        $spaceSettings = ReputationBase::getSpaceSettings(); // array containg all space settings
-        $dailyLimit = $spaceSettings[6]; // max points a user can receive on one single day
-        $decreaseWeighting = $spaceSettings[7];  // should weighting of repeating actions be decreased
+        $spaceSettings = ReputationBase::getSpaceSettings($space); // array containg all space settings        
+        $dailyLimit = $spaceSettings['daily_limit']; // max points a user can receive on one single day
+        $decreaseWeighting = $spaceSettings['decrease_weighting'];  // should weighting of repeating actions be decreased
 
-        $spaceContent = ReputationBase::getContentFromSpace($space->id, $forceUpdate);
+        $spaceContent = ReputationBase::getContentFromSpace($space, $forceUpdate);
 
         foreach ($spaceContent as $content) {
             /*
@@ -150,16 +150,16 @@ class ReputationUser extends ReputationBase {
              * use likes, favorites, comments from content that user created
              */
             if ($content->created_by == $userId) {
-                ReputationUser::addToDailyReputation($content, $spaceSettings[2], $dailyLimit);
+                ReputationUser::addToDailyReputation($content, $spaceSettings['create_content'], $dailyLimit);
 
                 // now count the likes this content received from other users
                 $cacheId = 'likes_earned_cache_' . $userId . '_' . $content->id;
                 $likes = ReputationBase::getLikesFromContent($content, $userId, $cacheId, $forceUpdate);
                 foreach ($likes as $like) {
                     if ($decreaseWeighting == '1') {
-                        ReputationUser::addToDailyReputation($like, $spaceSettings[3] / $scoreCount, $dailyLimit);
+                        ReputationUser::addToDailyReputation($like, $spaceSettings['smb_likes_content'] / $scoreCount, $dailyLimit);
                     } else {
-                        ReputationUser::addToDailyReputation($like, $spaceSettings[3], $dailyLimit);
+                        ReputationUser::addToDailyReputation($like, $spaceSettings['smb_likes_content'], $dailyLimit);
                     }
 
                     $scoreCount++;
@@ -172,9 +172,9 @@ class ReputationUser extends ReputationBase {
                     $favorites = ReputationBase::getFavoritesFromContent($content, $userId, $cacheId, $forceUpdate);
                     foreach ($favorites as $favorite) {
                         if ($decreaseWeighting == '1') {
-                            ReputationUser::addToDailyReputation($favorite, $spaceSettings[4] / $scoreCount, $dailyLimit);
+                            ReputationUser::addToDailyReputation($favorite, $spaceSettings['smb_favorites_content'] / $scoreCount, $dailyLimit);
                         } else {
-                            ReputationUser::addToDailyReputation($favorite, $spaceSettings[4], $dailyLimit);
+                            ReputationUser::addToDailyReputation($favorite, $spaceSettings['smb_favorites_content'], $dailyLimit);
                         }
 
                         $scoreCount++;
@@ -188,9 +188,9 @@ class ReputationUser extends ReputationBase {
                 $comments = ReputationBase::getCommentsFromContent($content, $userId, $cacheId, false, $forceUpdate);
                 foreach ($comments as $comment) {
                     if ($decreaseWeighting == '1') {
-                        ReputationUser::addToDailyReputation($comment, $spaceSettings[5] / $scoreCount, $dailyLimit);
+                        ReputationUser::addToDailyReputation($comment, $spaceSettings['smb_comments_content'] / $scoreCount, $dailyLimit);
                     } else {
-                        ReputationUser::addToDailyReputation($comment, $spaceSettings[5], $dailyLimit);
+                        ReputationUser::addToDailyReputation($comment, $spaceSettings['smb_comments_content'], $dailyLimit);
                     }
 
                     $scoreCount++;
@@ -205,15 +205,15 @@ class ReputationUser extends ReputationBase {
              */
             $commentsPosted = ReputationUser::GetCommentsGeneratedByUser($userId, $content, $forceUpdate);
             foreach ($commentsPosted as $commentPosted) {
-                ReputationUser::addToDailyReputation($commentPosted, $spaceSettings[2], $dailyLimit);
+                ReputationUser::addToDailyReputation($commentPosted, $spaceSettings['create_content'], $dailyLimit);
             }
 
             $commentsLiked = ReputationUser::GetCommentsGeneratedByUserLikedByOthers($userId, $content, $forceUpdate);
             foreach ($commentsLiked as $commentLiked) {
                 if ($decreaseWeighting == '1') {
-                    ReputationUser::addToDailyReputation($commentLiked, $spaceSettings[3] / $scoreCount, $dailyLimit);
+                    ReputationUser::addToDailyReputation($commentLiked, $spaceSettings['smb_likes_content'] / $scoreCount, $dailyLimit);
                 } else {
-                    ReputationUser::addToDailyReputation($commentLiked, $spaceSettings[3], $dailyLimit);
+                    ReputationUser::addToDailyReputation($commentLiked, $spaceSettings['smb_likes_content'], $dailyLimit);
                 }
                 $scoreCount++;
             }
@@ -232,7 +232,7 @@ class ReputationUser extends ReputationBase {
 
 
 
-        return ReputationUser::calculateUserScore($spaceSettings[0], $reputationScore, $spaceSettings[1]);
+        return ReputationUser::calculateUserScore($spaceSettings['functions'], $reputationScore, $spaceSettings['logarithm_base']);
     }
 
     /**
@@ -330,7 +330,7 @@ class ReputationUser extends ReputationBase {
      * @param $logarithmBase : The logarithm base
      * @return int
      */
-    private function calculateUserScore($function, $reputationScore, $logarithmBase) {
+    private function calculateUserScore($function, $reputationScore, $logarithm_base) {
         if ($function == ReputationBase::LINEAR) {
             return intval($reputationScore);
         } else {
@@ -338,7 +338,7 @@ class ReputationUser extends ReputationBase {
                 return 0;
             } else {
                 // increase reputation score + 1 so log is not 0 when user has 1 point
-                $logValue = log($reputationScore + 1, $logarithmBase);
+                $logValue = log($reputationScore + 1, $logarithm_base);
                 return intval(round($logValue * 100));
             }
         }

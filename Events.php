@@ -1,16 +1,16 @@
 <?php
+
 /**
  * @author Anton Kurnitzky (v0.11) & Philipp Horna (v0.20+) */
 
 namespace humhub\modules\reputation;
 
 use Yii;
-use humhub\modules\space\behaviors\SpaceSetting;
+use yii\helpers\Console;
 use humhub\modules\space\models\Space;
-use humhub\modules\reputation\models\ReputationBase;
 use humhub\modules\reputation\models\ReputationUser;
 use humhub\modules\reputation\models\ReputationContent;
-use humhub\modules\space\behaviors\SpaceModelModules;
+use humhub\modules\content\models\ContentContainerSetting;
 
 class Events extends \yii\base\Object {
 
@@ -18,21 +18,27 @@ class Events extends \yii\base\Object {
      * Recalculate user and content reputation every hour
      * Only do this in spaces where reputation module is enabled
      *
-     * @param $event
-     * @throws CException
+     * @param \yii\base\Event $event
      */
-    public static function onCronHourlyRun($event) {       
+    public static function onCronHourlyRun($event) {
+        $controller = $event->sender;
+        $spaces = Space::find()->all();
+        $count_spaces = count($spaces);
 
-        foreach (Space::findAll() as $space) {
-            if (SpaceModelModules::isModuleEnabled('reputation')) {
-                $cronJobEnabled = SpaceSetting::getSetting('cron_job', 'reputation', ReputationBase::DEFAULT_CRON_JOB);
+        $processed = 0;
+        Console::startProgress($processed, $count_spaces, '[Module] calculate REPUTATION for user and content...', false);
+        foreach ($spaces as $space) {
+            if ($space->isModuleEnabled('reputation')) {
+                $cronJobEnabled = ContentContainerSetting::findOne(['module_id' => 'reputation', 'contentcontainer_id' => $space->wall_id, 'name' => 'cron_job', 'value' => '1']);
                 if ($cronJobEnabled) {
-                    print "- Recalculating reputation for space: $space->id  $space->name\n";
                     ReputationUser::updateUserReputation($space, true);
                     ReputationContent::updateContentReputation($space, true);
+                    Console::updateProgress(++$processed, $count_spaces);
                 }
             }
         }
+        Console::endProgress(true);
+        $controller->stdout('done - ' . $processed . ' spaces checked.' . PHP_EOL, Console::FG_GREEN);
     }
 
     /**
@@ -105,11 +111,11 @@ class Events extends \yii\base\Object {
 
     public static function onSpaceAdminMenuWidgetInit($event) {
         if ($event->sender->space !== null && $event->sender->space->isModuleEnabled('reputation') && $event->sender->space->isAdmin()) {
-            $event->sender->addItem(['label' => Yii::t('ReputationModule.base', 'User Reputation'),              
-                'url' => $event->sender->space->createUrl('/reputation/admin'),                    
+            $event->sender->addItem(['label' => Yii::t('ReputationModule.base', 'User Reputation'),
+                'url' => $event->sender->space->createUrl('/reputation/admin'),
                 'sortOrder' => 300,
                 'isActive' => (Yii::$app->controller->module && Yii::$app->controller->module->id === 'reputation'),
-                ]);
+            ]);
         }
     }
 
@@ -127,7 +133,7 @@ class Events extends \yii\base\Object {
                 'group' => 'modules',
             ));
         }
-    }  
+    }
 
     /**
      * On run of integrity check command, validate all module data
@@ -135,9 +141,9 @@ class Events extends \yii\base\Object {
      * @param type $event
      */
     public static function onIntegrityCheck($event) {
-        $integrityChecker = $event->sender;
-        $integrityChecker->showTestHeadline("Validating Reputation Content (" . ReputationContent::count() . " entries)");
-        $integrityChecker->showTestHeadline("Validating Reputation User (" . ReputationUser::count() . " entries)");
+        $integrityChecker = $event->sender;        
+        $integrityChecker->showTestHeadline("Validating Reputation Content (" . ReputationContent::find()->count() . " entries)");
+        $integrityChecker->showTestHeadline("Validating Reputation User (" . ReputationUser::find()->count() . " entries)");
     }
 
 }

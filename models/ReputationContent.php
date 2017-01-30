@@ -86,12 +86,10 @@ class ReputationContent extends ReputationBase {
      * @param bool $forceUpdate : Ignore cache
      */
     public function updateContentReputation($space, $forceUpdate = false) {
-        $spaceId = $space->id;
-
-        $spaceContent = ReputationBase::getContentFromSpace($spaceId);
-        $spaceSettings = ReputationBase::getSpaceSettings();
-        $lambda_short = $spaceSettings[8];
-        $lambda_long = $spaceSettings[9];
+        $spaceContent = ReputationBase::getContentFromSpace($space);
+        $spaceSettings = ReputationBase::getSpaceSettings($space);        
+        $lambda_short = $spaceSettings['lambda_short'];
+        $lambda_long = $spaceSettings['lambda_long'];
 
         foreach ($spaceContent as $content) {
 
@@ -144,7 +142,7 @@ class ReputationContent extends ReputationBase {
      */
     public function calculateContentReputationScore(Content $content, Space $space, $forceUpdate) {
         // Get space settings. Use default values if space module settings are not configured yet
-        $spaceSettings = ReputationBase::getSpaceSettings();
+        $spaceSettings = ReputationBase::getSpaceSettings($space->id);
 
         $cacheId = 'likes_earned_cache_' . $content->id;
         $likes = ReputationBase::getLikesFromContent($content, $content->created_by, $cacheId, $forceUpdate);
@@ -161,7 +159,7 @@ class ReputationContent extends ReputationBase {
         $cacheId = 'comments_earned_cache_' . $content->id;
         $comments = ReputationBase::getCommentsFromContent($content, $content->created_by, $cacheId, true, $forceUpdate);
 
-        return (count($likes) * $spaceSettings[3] + count($favorites) * $spaceSettings[4] + count($comments) * $spaceSettings[5]);
+        return (count($likes) * $spaceSettings['smb_likes_content'] + count($favorites) * $spaceSettings['smb_favorites_content'] + count($comments) * $spaceSettings['smb_comments_content']);
     }
 
     /**
