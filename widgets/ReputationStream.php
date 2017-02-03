@@ -9,7 +9,6 @@ class ReputationStream extends Stream {
     public function init() {
         parent::init();
     }
-    
     /**
      * Creates url to stream BaseStreamAction including placeholders
      * which are replaced and handled by javascript.
@@ -18,15 +17,14 @@ class ReputationStream extends Stream {
      *
      * @return string
      */
-    protected function getStreamUrl()
-    {
+    protected function getStreamUrl() {
         $params = array_merge([
             'limit' => '-limit-',
             'filters' => '-filter-',
             'sort' => '-sort-',
             'from' => '-from-',
             'mode' => \humhub\modules\reputation\components\StreamAction::MODE_HOT
-        ], $this->streamActionParams);
+                ], $this->streamActionParams);
 
         if ($this->contentContainer) {
             return $this->contentContainer->createUrl($this->streamAction, $params);

@@ -11,6 +11,7 @@ class m160403_114257_initial extends Migration {
             'visibility' => 'tinyint(4) NOT NULL',
             'user_id' => 'int(11) NOT NULL',
             'space_id' => 'int(11) NOT NULL',
+            'wall_id' => 'int(11) NOT NULL',
             'created_at' => 'datetime DEFAULT NULL',
             'created_by' => 'int(11) DEFAULT NULL',
             'updated_at' => 'datetime DEFAULT NULL',

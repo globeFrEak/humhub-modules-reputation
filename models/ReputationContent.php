@@ -85,30 +85,28 @@ class ReputationContent extends ReputationBase {
      * @param $space : The space where the content should be updated
      * @param bool $forceUpdate : Ignore cache
      */
-    public function updateContentReputation($space, $forceUpdate = false) {
-        $spaceContent = ReputationBase::getContentFromSpace($space);
-        $spaceSettings = ReputationBase::getSpaceSettings($space);        
+    public function updateContentReputation($container, $forceUpdate = false) {
+        $spaceContent = ReputationBase::getContentFromSpace($container);
+        $spaceSettings = ReputationBase::getSpaceSettings($container);
         $lambda_short = $spaceSettings['lambda_short'];
         $lambda_long = $spaceSettings['lambda_long'];
 
         foreach ($spaceContent as $content) {
 
-            $cacheId = 'reputation_space_content' . '_' . $spaceId . '_' . $content->id;
+            $cacheId = 'reputation_space_content' . '_' . $container->wall_id . '_' . $content->id;
             $contentReputation = Yii::$app->cache->get($cacheId);
 
             if ($contentReputation === false || $forceUpdate === true) {
-
+                $contentReputation = [];
                 // get all reputation_content objects from this space
                 $params = array('content_id' => $content->id);
-
                 $contentReputation = ReputationContent::findOne($params);
-
-                if ($contentReputation == null && !Yii::$app->user->isGuest) {
+                if ($contentReputation == null) {
                     // Create new reputation_content entry
                     $contentReputation = new ReputationContent();
                     $contentReputation->content_id = $content->id;
                 }
-                $score = ReputationContent::calculateContentReputationScore($content, $space, $forceUpdate);
+                $score = ReputationContent::calculateContentReputationScore($content, $container, $forceUpdate);
                 $contentReputation->score = $score;
                 $timePassed = ReputationContent::getTimeInHoursSinceContentCreation($content->created_at);
                 $contentReputation->score_long = ReputationContent::getDecayedScore($score, $timePassed, $lambda_long);
@@ -140,14 +138,14 @@ class ReputationContent extends ReputationBase {
      * @param $content
      * @param $space
      */
-    public function calculateContentReputationScore(Content $content, Space $space, $forceUpdate) {
+    public function calculateContentReputationScore($content, $container, $forceUpdate) {
         // Get space settings. Use default values if space module settings are not configured yet
-        $spaceSettings = ReputationBase::getSpaceSettings($space->id);
+        $spaceSettings = ReputationBase::getSpaceSettings($container);
 
         $cacheId = 'likes_earned_cache_' . $content->id;
         $likes = ReputationBase::getLikesFromContent($content, $content->created_by, $cacheId, $forceUpdate);
 
-        if ($space->isModuleEnabled('favorite')) {
+        if ($container->isModuleEnabled('favorite')) {
             $scoreCount = 1;
             // now count the favorites this content earned from other users
             $cacheId = 'favorites_earned_cache_' . $content->id;

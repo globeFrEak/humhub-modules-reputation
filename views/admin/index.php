@@ -89,7 +89,7 @@ use humhub\modules\space\modules\manage\widgets\DefaultMenu;
         </table>
 
         <div class="pagination-container">
-<?php //echo \humhub\widgets\LinkPager::widget(['pagination' => $pagination]);  ?>
+<?php echo \humhub\widgets\LinkPager::widget(['pagination' => $pagination]);  ?>
         </div>
 
         <hr>

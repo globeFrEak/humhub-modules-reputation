@@ -69,9 +69,9 @@ class ProfileController extends \humhub\modules\content\components\ContentContai
 
     /**
      * Action that renders the list view.
-     * @see views/profile/index.php
+     * @see views/profile/config.php
      */
-    public function actionIndex() {
+    public function actionConfig() {
 
         if (isset($_POST['reputationUsers'])) {
             $user = User::findIdentityByAccessToken(Yii::$app->getRequest()->get('uguid'));
@@ -94,9 +94,7 @@ class ProfileController extends \humhub\modules\content\components\ContentContai
         // TODO was ist das?!
         //Yii::$app->user->setFlash('data-saved', Yii::t('SpaceModule.controllers_AdminController', 'Saved'));
 
-
-        $user = User::findIdentityByAccessToken(Yii::$app->getRequest()->get('uguid'));
-        $spaces = Membership::GetUserSpaces($user->id);
+        $user = User::findIdentityByAccessToken(Yii::$app->getRequest()->get('uguid'));                
         $params = [':userId' => $user->id];
         $query = ReputationUser::find();
         $query->where('user_id=:userId', $params);
@@ -107,11 +105,10 @@ class ProfileController extends \humhub\modules\content\components\ContentContai
         $itemCount = count($result);
 
         $pagination = new \yii\data\Pagination(['totalCount' => $itemCount]);
-        return $this->render('index', array(
+        return $this->render('config', array(
                     'contentContainer' => $this->contentContainer,
                     'user' => $user,
-                    'reputations' => $result,
-                    'spaces' => $spaces,
+                    'reputations' => $result,                   
                     'pagination' => $pagination,
         ));
     }

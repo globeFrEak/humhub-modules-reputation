@@ -8,6 +8,8 @@ namespace humhub\modules\reputation;
 use Yii;
 use yii\helpers\Console;
 use humhub\modules\space\models\Space;
+use humhub\modules\user\models\User;
+use humhub\modules\reputation\models\ReputationBase;
 use humhub\modules\reputation\models\ReputationUser;
 use humhub\modules\reputation\models\ReputationContent;
 use humhub\modules\content\models\ContentContainerSetting;
@@ -24,17 +26,32 @@ class Events extends \yii\base\Object {
         $controller = $event->sender;
         $spaces = Space::find()->all();
         $count_spaces = count($spaces);
-
         $processed = 0;
-        Console::startProgress($processed, $count_spaces, '[Module] calculate REPUTATION for user and content...', false);
+        Console::startProgress($processed, $count_spaces, '[Module] calculate REPUTATION for Spaces...', false);
         foreach ($spaces as $space) {
             if ($space->isModuleEnabled('reputation')) {
                 $cronJobEnabled = ContentContainerSetting::findOne(['module_id' => 'reputation', 'contentcontainer_id' => $space->wall_id, 'name' => 'cron_job', 'value' => '1']);
+                if ($cronJobEnabled === NULL) {
+                    ReputationBase::setSpaceSettings($space);
+                }
                 if ($cronJobEnabled) {
+                    self::onSpaceEnabledAsDefault($space);
                     ReputationUser::updateUserReputation($space, true);
                     ReputationContent::updateContentReputation($space, true);
-                    Console::updateProgress(++$processed, $count_spaces);
                 }
+                Console::updateProgress( ++$processed, $count_spaces);
+            }
+        }
+        Console::endProgress(true);
+        $controller->stdout('done - ' . $processed . ' spaces checked.' . PHP_EOL, Console::FG_GREEN);
+
+        $users = User::find()->all();
+        $count_users = count($spaces);
+        Console::startProgress($processed, $count_users, '[Module] calculate REPUTATION for Users...', false);
+        foreach ($users as $user) {
+            if ($space->isModuleEnabled('reputation')) {
+                self::onUserEnabledAsDefault($user);
+                Console::updateProgress( ++$processed, $count_users);
             }
         }
         Console::endProgress(true);
@@ -88,18 +105,15 @@ class Events extends \yii\base\Object {
     /**
      * Show reputation menu in user profile
      *
-     * @param $event
-     * 
-     * GEHT soweit
-     * 
+     * @param type $event
      */
     public static function onProfileMenuInit($event) {
         if ($event->sender->user !== null && $event->sender->user->isModuleEnabled('reputation')) {
             $event->sender->addItem(array(
                 'label' => Yii::t('ReputationModule.base', 'User Reputation'),
                 'group' => 'profile',
-                'url' => $event->sender->user->createUrl('/reputation/profile'),
-                'isActive' => Yii::$app->controller->module && Yii::$app->controller->module->id == 'reputation',
+                'url' => $event->sender->user->createUrl('/reputation/profile/config'),
+                'isActive' => (Yii::$app->controller->module && Yii::$app->controller->module->id == 'reputation' && Yii::$app->controller->id == 'profile' && Yii::$app->controller->action->id == 'config'),
                 'sortOrder' => 1000,
             ));
         }
@@ -107,6 +121,8 @@ class Events extends \yii\base\Object {
 
     /*
      * Show reputation menu in space admin menu
+     * 
+     * @param type $event
      */
 
     public static function onSpaceAdminMenuWidgetInit($event) {
@@ -121,6 +137,8 @@ class Events extends \yii\base\Object {
 
     /*
      * Show reputation menu in space menu
+     * 
+     * @param type $event
      */
 
     public static function onSpaceMenuInit($event) {
@@ -129,8 +147,9 @@ class Events extends \yii\base\Object {
                 'label' => Yii::t('ReputationModule.base', 'Hot'),
                 'url' => $event->sender->space->createUrl('/reputation/space'),
                 'icon' => '<i class="fa fa-fire"></i>',
-                'isActive' => (Yii::$app->controller->module && Yii::$app->controller->module->id == 'reputation'),
+                'isActive' => (Yii::$app->controller->module && Yii::$app->controller->module->id == 'reputation' && Yii::$app->controller->action->id == 'index'),
                 'group' => 'modules',
+                'sortOrder' => 200,
             ));
         }
     }
@@ -138,12 +157,45 @@ class Events extends \yii\base\Object {
     /**
      * On run of integrity check command, validate all module data
      *
-     * @param type $event
+     * @param $event
      */
     public static function onIntegrityCheck($event) {
-        $integrityChecker = $event->sender;        
+        $integrityChecker = $event->sender;
         $integrityChecker->showTestHeadline("Validating Reputation Content (" . ReputationContent::find()->count() . " entries)");
         $integrityChecker->showTestHeadline("Validating Reputation User (" . ReputationUser::find()->count() . " entries)");
+    }
+
+    /**
+     * Add Space Widget (TODO when Reputation on this space enabled)  
+     *
+     * @param $event
+     */
+    public static function onSpaceSidebar($event) {
+        $event->sender->addWidget(widgets\SpaceUserReputationWidget::className(), array('contentContainer' => $event->sender->space), array('sortOrder' => 10));
+    }
+
+    public static function onSpaceEnabledAsDefault($space) {
+        $moduleEnabled = \humhub\modules\space\models\Module::findOne(['space_id' => $space->id, 'module_id' => 'reputation']);
+        $moduleAsDefaultOn = \humhub\modules\space\models\Module::find()->where(['space_id' => 0, 'module_id' => 'reputation', 'state' => 1])->orWhere(['space_id' => 0, 'module_id' => 'reputation', 'state' => 2])->one();
+        if ($moduleEnabled === NULL && $moduleAsDefaultOn != NULL) {
+            $spaceEnableModule = new \humhub\modules\space\models\Module();
+            $spaceEnableModule->module_id = 'reputation';
+            $spaceEnableModule->space_id = $space->id;
+            $spaceEnableModule->state = $moduleAsDefaultOn->state;
+            $spaceEnableModule->save();
+        }
+    }
+
+    public static function onUserEnabledAsDefault($user) {
+        $moduleEnabled = \humhub\modules\user\models\Module::findOne(['user_id' => $user->id, 'module_id' => 'reputation']);
+        $moduleAsDefaultOn = \humhub\modules\user\models\Module::find()->where(['user_id' => 0, 'module_id' => 'reputation', 'state' => 1])->orWhere(['user_id' => 0, 'module_id' => 'reputation', 'state' => 2])->one();
+        if ($moduleEnabled === NULL && $moduleAsDefaultOn != NULL) {
+            $spaceEnableModule = new \humhub\modules\user\models\Module();
+            $spaceEnableModule->module_id = 'reputation';
+            $spaceEnableModule->user_id = $user->id;
+            $spaceEnableModule->state = $moduleAsDefaultOn->state;
+            $spaceEnableModule->save();
+        }
     }
 
 }

@@ -19,15 +19,17 @@ use humhub\modules\space\models\Space;
         <?php if (Yii::$app->user->id != $user->id) echo Yii::t('ReputationModule.views_profileReputation_show', 'You can only see reputation the user shares.'); ?>
 
         <br/><br/>
-
+        
+        <?php if (isset($reputations) && (Yii::$app->user->id === $user->id)): ?>
         <?php
         $form = ActiveForm::begin([
-                    'action' => ['index', 'uguid' => $user->guid],
+                    'action' => ['config', 'uguid' => $user->guid],
                     'method' => 'post',
                     'id' => 'configure-form',
                     'enableAjaxValidation' => false,
         ]);
-        ?>       
+        ?>    
+        <?php endif ?>
         <table class="table table-hover">
             <thead>
                 <tr>
@@ -68,7 +70,7 @@ use humhub\modules\space\models\Space;
                             // Space Icon Widget
                             echo \humhub\modules\space\widgets\Image::widget([
                                 'space' => $space,
-                                'width' => 48,
+                                'width' => 32,
                                 'htmlOptions' => [
                                     'class' => 'current-space-image',
                                 ],
@@ -122,13 +124,13 @@ use humhub\modules\space\models\Space;
             <?php echo \humhub\widgets\LinkPager::widget(['pagination' => $pagination]); ?>
         </div>
 
-        <?php if (isset($reputation) && (Yii::$app->user->id == $reputation->user_id)): ?>
+        <?php if (isset($reputations) && (Yii::$app->user->id == $user->id)): ?>
             <hr>
-            <?php echo Html::submitButton(Yii::t('ReputationModule.views_profileReputation_show', 'Save'), array('class' => 'btn btn-primary')); ?>
+            <?php echo Html::submitButton(Yii::t('ReputationModule.views_profileReputation_show', 'Save'), array('class' => 'btn btn-primary')); ?>            
 
             <!-- show flash message after saving -->
-            <?php echo \humhub\widgets\DataSaved::widget(); ?>
+            <?php echo \humhub\widgets\DataSaved::widget(); ?>       
+            <?php ActiveForm::end(); ?>
         <?php endif ?>
-        <?php ActiveForm::end(); ?>
     </div>
 </div>

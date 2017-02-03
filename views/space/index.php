@@ -1,5 +1,6 @@
-<?php echo \humhub\modules\post\widgets\Form::widget(['contentContainer' => $space]); 
+<?php echo \humhub\modules\post\widgets\Form::widget(['contentContainer' => $space]); ?>
 
+<?php
 $emptyMessage = '';
 if ($canCreatePosts) {
     $emptyMessage = Yii::t('SpaceModule.views_space_index', '<b>This space is still empty!</b><br>Start by posting something here...');
@@ -12,7 +13,7 @@ if ($canCreatePosts) {
 echo \humhub\modules\reputation\widgets\ReputationStream::widget(array(
     'contentContainer' => $space,
     'streamAction' => '/reputation/space/stream',
-    'messageStreamEmptyWithFiltersCss' => $emptyMessage,
-    'messageStreamEmptyWithFilters' => ($canCreatePosts) ? 'placeholder-empty-stream' : '',
+    'messageStreamEmpty' => $emptyMessage,
+    'messageStreamEmptyWithFiltersCss' => $emptyMessage,  
 ));
 ?>

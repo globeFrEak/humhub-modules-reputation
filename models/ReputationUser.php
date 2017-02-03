@@ -1,4 +1,5 @@
 <?php
+
 /**
  * This is the model class for table "reputation_user".
  *
@@ -8,6 +9,7 @@
  * @property integer $visibility
  * @property integer $user_id
  * @property integer $space_id
+ * @property integer $wall_id
  * @property string $created_at
  * @property integer $created_by
  * @property string $updated_at
@@ -25,11 +27,7 @@ use Yii;
 use yii\db\Exception;
 
 class ReputationUser extends ReputationBase {
-    /*
-     * Key-Value pair
-     * Key: YY-MM-DD
-     * Value: The reputation score the user gained on this day
-     */
+
     private static $daily_reputation = array();
 
     /**
@@ -44,22 +42,21 @@ class ReputationUser extends ReputationBase {
      */
     public function rules() {
         return array(
-                [['value', 'visibility', 'user_id', 'space_id'], 'required'],
-                [['value', 'visibility', 'user_id', 'space_id', 'created_by', 'updated_by'], 'integer',],
-                [['created_at', 'updated_at'], 'safe']
+            [['value', 'visibility', 'user_id', 'space_id', 'wall_id'], 'required'],
+            [['value', 'visibility', 'user_id', 'space_id', 'wall_id', 'created_by', 'updated_by'], 'integer',],
+            [['created_at', 'updated_at'], 'safe']
         );
     }
 
     /**
-     * @return array relational rules.
-
-      public function relations() {
-      return array(
-      'user' => array(self::BELONGS_TO, 'User', 'user_id'),
-      'space' => array(self::BELONGS_TO, 'Space', 'space_id'),
-      );
-      }
+     * @return array relational rules.  
      */
+    public function relations() {
+        return array(
+            'user' => array(self::BELONGS_TO, 'User', 'user_id'),
+            'space' => array(self::BELONGS_TO, 'Space', 'space_id'),
+        );
+    }
 
     /**
      * @return array customized attribute labels (name=>label)
@@ -70,7 +67,8 @@ class ReputationUser extends ReputationBase {
             'value' => 'Value',
             'visibility' => 'Visibility',
             'user_id' => 'User',
-            'space_id' => 'Space',        
+            'space_id' => 'Space ID',
+            'wall_id' => 'ContentContainer wall_id',
             'created_at' => 'Created At',
             'created_by' => 'Created By',
             'updated_at' => 'Updated At',
@@ -83,33 +81,33 @@ class ReputationUser extends ReputationBase {
      * @param $space : The space to check
      * @param bool $forceUpdate : Ignore cache
      */
-    public function updateUserReputation($space, $forceUpdate = false) {
-        $spaceId = $space->id;
+    public function updateUserReputation($container, $forceUpdate = false) {
 
         // get all users from this space
-        $attributes = array('space_id' => $spaceId);
+        $attributes = array('space_id' => $container->id);
         $spaceUsers = Membership::findAll($attributes);
 
         foreach ($spaceUsers as $user) {
 
-            $cacheId = 'reputation_space_user' . '_' . $spaceId . '_' . $user->user_id;
+            $cacheId = 'reputation_space_user' . '_' . $container->wall_id . '_' . $user->user_id;
             $userReputation = Yii::$app->cache->get($cacheId);
 
             if ($userReputation === false || $forceUpdate === true) {
 
                 // get all reputation_user objects from this space
-                $condition = array('user_id' => $user->user_id, 'space_id' => $spaceId);
+                $condition = array('user_id' => $user->user_id, 'space_id' => $container->id);
                 $userReputation = ReputationUser::findOne($condition);
 
-                if ($userReputation == null && !Yii::$app->user->isGuest) {
+                if ($userReputation == null) {
                     // Create new reputation_user entry
                     $userReputation = new ReputationUser;
                     $userReputation->user_id = $user->user_id;
-                    $userReputation->space_id = $spaceId;
+                    $userReputation->space_id = $container->id;
+                    $userReputation->wall_id = $container->wall_id;
                     $userReputation->visibility = 0;
                     $userReputation->created_by = $user->user_id;
                 }
-                $userReputation->value = ReputationUser::calculateUserReputationScore($user->user_id, $space, $forceUpdate);
+                $userReputation->value = ReputationUser::calculateUserReputationScore($user->user_id, $container, $forceUpdate);
                 $userReputation->updated_at = date('Y-m-d H:i:s');
                 $userReputation->save();
 
@@ -117,7 +115,7 @@ class ReputationUser extends ReputationBase {
             }
         }
 
-        ReputationUser::deleteMissingUsers($spaceId);
+        ReputationUser::deleteMissingUsers($container->wall_id);
     }
 
     /**
@@ -127,15 +125,15 @@ class ReputationUser extends ReputationBase {
      * Include limitations in calculate like weight decrease and daily limit
      *
      * @param $userId : The userId to calculate reputation for
-     * @param $space : The space the calculation is being based on
+     * @param $container : The Space (contentContainer)  the calculation is being based on
      * @return int: User reputation score inside this space
      */
-    private function calculateUserReputationScore($userId, $space, $forceUpdate = false) {
-        $spaceSettings = ReputationBase::getSpaceSettings($space); // array containg all space settings        
+    private function calculateUserReputationScore($userId, $container, $forceUpdate = false) {
+        $spaceSettings = ReputationBase::getSpaceSettings($container); // array containg all space settings        
         $dailyLimit = $spaceSettings['daily_limit']; // max points a user can receive on one single day
         $decreaseWeighting = $spaceSettings['decrease_weighting'];  // should weighting of repeating actions be decreased
 
-        $spaceContent = ReputationBase::getContentFromSpace($space, $forceUpdate);
+        $spaceContent = ReputationBase::getContentFromSpace($container, $forceUpdate);
 
         foreach ($spaceContent as $content) {
             /*
@@ -144,14 +142,12 @@ class ReputationUser extends ReputationBase {
              * e.g. the second like only gives the user half the points from the first like
              */
             $scoreCount = 1;
-
             /*
              * handle content that is created by this user
              * use likes, favorites, comments from content that user created
              */
             if ($content->created_by == $userId) {
                 ReputationUser::addToDailyReputation($content, $spaceSettings['create_content'], $dailyLimit);
-
                 // now count the likes this content received from other users
                 $cacheId = 'likes_earned_cache_' . $userId . '_' . $content->id;
                 $likes = ReputationBase::getLikesFromContent($content, $userId, $cacheId, $forceUpdate);
@@ -161,11 +157,10 @@ class ReputationUser extends ReputationBase {
                     } else {
                         ReputationUser::addToDailyReputation($like, $spaceSettings['smb_likes_content'], $dailyLimit);
                     }
-
                     $scoreCount++;
                 }
 
-                if ($space->isModuleEnabled('favorite')) {
+                if ($container->isModuleEnabled('favorite')) {
                     $scoreCount = 1;
                     // now count the favorites this content received from other users
                     $cacheId = 'favorites_earned_cache_' . $userId . '_' . $content->id;
@@ -176,13 +171,10 @@ class ReputationUser extends ReputationBase {
                         } else {
                             ReputationUser::addToDailyReputation($favorite, $spaceSettings['smb_favorites_content'], $dailyLimit);
                         }
-
                         $scoreCount++;
                     }
                 }
-
                 $scoreCount = 1;
-
                 // now count how many comments this post has generated
                 $cacheId = 'comments_earned_cache_' . $userId . '_' . $content->id;
                 $comments = ReputationBase::getCommentsFromContent($content, $userId, $cacheId, false, $forceUpdate);
@@ -192,10 +184,8 @@ class ReputationUser extends ReputationBase {
                     } else {
                         ReputationUser::addToDailyReputation($comment, $spaceSettings['smb_comments_content'], $dailyLimit);
                     }
-
                     $scoreCount++;
                 }
-
                 $scoreCount = 1;
             }
 
@@ -358,23 +348,5 @@ class ReputationUser extends ReputationBase {
                 Membership::delete();
             }
         }
-    }
-
-    /**
-     * Get a array containing user e-mail addresses and their reputation score for a specific space
-     * @param $spaceId
-     * @return array()
-
-      public function getSpaceUsersAndScore($spaceId) {
-      $reputationUsers = Yii::$app->db->createCommand()
-      ->select('u.email, ru.value')
-      ->from('reputation_user ru')
-      ->join('user u', 'ru.user_id=u.id')
-      ->where('space_id=:spaceId', array(':spaceId' => $spaceId))
-      ->queryAll();
-
-      return $reputationUsers;
-      }
-     * 
-     */
+    }  
 }

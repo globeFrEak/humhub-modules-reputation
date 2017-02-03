@@ -38,7 +38,8 @@ class ReputationBase extends \humhub\components\ActiveRecord {
     const DEFAULT_CRON_JOB = '1';
     const DEFAULT_LAMBDA_SHORT = '0.00120338';
     const DEFAULT_LAMBDA_LONG = '0.000024558786159';
-    const DEFAULT_RANKING_NEW_PERIOD = '36';
+
+    //const DEFAULT_RANKING_NEW_PERIOD = '36';
 
     /**
      * Returns all content objects (posts, polls, etc.) from this space
@@ -47,13 +48,13 @@ class ReputationBase extends \humhub\components\ActiveRecord {
      * @param bool $forceUpdate : Ignore cache
      * @return Content[]
      */
-    public function getContentFromSpace($space, $forceUpdate = false) {
-        $cacheId = 'posts_created_cache' . '_' . $space->id;
+    public function getContentFromSpace($container, $forceUpdate = false) {
+        $cacheId = 'posts_created_cache' . '_' . $container->wall_id;
         $spaceContent = Yii::$app->cache->get($cacheId);
         if ($spaceContent === false || $forceUpdate === true) {
 
             $condition = 'contentcontainer_id=:spaceId AND object_model!=:activity';
-            $params = [':spaceId' => $space->id, ':activity' => 'humhub\modules\activity\models\Activity'];
+            $params = [':spaceId' => $container->wall_id, ':activity' => 'humhub\modules\activity\models\Activity'];
             $query = Content::find()
                     ->where($condition, $params)
                     ->all();
@@ -104,36 +105,45 @@ class ReputationBase extends \humhub\components\ActiveRecord {
     }
 
     /**
-     * Return an array with all space settings 
-     * @param $space Object 
-     * @return array
+     * Return an array with all space settings and call setSpaceSettings when not found
+     * @param $container Object 
+     * @return $spaceSettings array
      */
-    protected function getSpaceSettings($space) {
-        $getSettings = ContentContainerSetting::findAll(['module_id' => 'reputation', 'contentcontainer_id' => $space->wall_id]);
-        $spaceSettings = [];
+    protected function getSpaceSettings($container) {
+        $getSettings = ContentContainerSetting::findAll(['module_id' => 'reputation', 'contentcontainer_id' => $container->wall_id]);
 
         if (count($getSettings) > 0) {
             foreach ($getSettings as $setting) {
                 $spaceSettings[$setting['name']] = $setting['value'];
             }
         } else {
-            $spaceSettings = [
-                'functions' => self::DEFAULT_FUNCTION,
-                'logarithm_base' => self::DEFAULT_LOGARITHM_BASE,
-                'create_content' => self::DEFAULT_CREATE_CONTENT,
-                'smb_likes_content' => self::DEFAULT_SMB_LIKES_CONTENT,
-                'smb_likes_content' => self::DEFAULT_SMB_FAVORITES_CONTENT,
-                'smb_favorites_content' => self::DEFAULT_SMB_COMMENTS_CONTENT,
-                'smb_comments_content' => self::DEFAULT_SMB_COMMENTS_CONTENT,
-                'daily_limit' => self::DEFAULT_DAILY_LIMIT,
-                'decrease_weighting' => self::DEFAULT_DECREASE_WEIGHTING,
-                'cron_job' => self::DEFAULT_CRON_JOB,
-                'lambda_long' => self::DEFAULT_LAMBDA_SHORT,
-                'lambda_short' => self::DEFAULT_LAMBDA_LONG];
+            $spaceSettings = self::setSpaceSettings($container);
+        }
+        return $spaceSettings;
+    }
 
-            foreach ($spaceSettings as $name => $value) {                
-                Setting::Set($space, $name, $value, 'reputation');
-            }            
+    /**
+     * set standard Reputation settings onSpace
+     * @param $container Object 
+     * @return $spaceSettings array
+     */
+    public function setSpaceSettings($container) {
+        $spaceSettings = [
+            'functions' => self::DEFAULT_FUNCTION,
+            'logarithm_base' => self::DEFAULT_LOGARITHM_BASE,
+            'create_content' => self::DEFAULT_CREATE_CONTENT,
+            'smb_likes_content' => self::DEFAULT_SMB_LIKES_CONTENT,
+            'smb_likes_content' => self::DEFAULT_SMB_FAVORITES_CONTENT,
+            'smb_favorites_content' => self::DEFAULT_SMB_COMMENTS_CONTENT,
+            'smb_comments_content' => self::DEFAULT_SMB_COMMENTS_CONTENT,
+            'daily_limit' => self::DEFAULT_DAILY_LIMIT,
+            'decrease_weighting' => self::DEFAULT_DECREASE_WEIGHTING,
+            'cron_job' => self::DEFAULT_CRON_JOB,
+            'lambda_long' => self::DEFAULT_LAMBDA_SHORT,
+            'lambda_short' => self::DEFAULT_LAMBDA_LONG];
+
+        foreach ($spaceSettings as $name => $value) {
+            Setting::Set($container, $name, $value, 'reputation');
         }
         return $spaceSettings;
     }
