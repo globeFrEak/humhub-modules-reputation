@@ -9,13 +9,9 @@ class ReputationStream extends Stream {
     public function init() {
         parent::init();
     }
+
     /**
-     * Creates url to stream BaseStreamAction including placeholders
-     * which are replaced and handled by javascript.
-     *
-     * If a contentContainer is specified it will be used to create the url.
-     *
-     * @return string
+     * @inheritdoc
      */
     protected function getStreamUrl() {
         $params = array_merge([

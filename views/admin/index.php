@@ -96,11 +96,11 @@ use humhub\modules\space\modules\manage\widgets\DefaultMenu;
 <?php echo Html::submitButton(Yii::t('ReputationModule.views_profileReputation_show', 'Update'), array('class' => 'btn btn-primary')); ?>
 
         <div class="pull-right">
-<?php echo Html::a(Yii::t('ReputationModule.views_adminReputation_show', 'Configuration'), array('//reputation/admin/space-settings', 'sguid' => $space->guid), array('class' => 'btn btn-warning')); ?>          
+<?php echo Html::a(Yii::t('ReputationModule.views_adminReputation_show', 'Configuration'), array('//reputation/space/settings', 'sguid' => $space->guid), array('class' => 'btn btn-warning')); ?>          
         </div>       
 
         <!-- show flash message after saving -->
-        <?php //echo \humhub\widgets\DataSaved::widget(); ?>
+        <?php echo \humhub\widgets\DataSaved::widget(); ?>
 <?php ActiveForm::end(); ?>
     </div>
 </div>

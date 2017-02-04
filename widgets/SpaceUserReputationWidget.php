@@ -1,5 +1,9 @@
 <?php
 
+/**
+ * @author Philipp Horna (v0.20+) 
+ * */
+
 namespace humhub\modules\reputation\widgets;
 
 use humhub\components\Widget;

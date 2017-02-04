@@ -105,6 +105,7 @@ class ReputationContent extends ReputationBase {
                     // Create new reputation_content entry
                     $contentReputation = new ReputationContent();
                     $contentReputation->content_id = $content->id;
+                    $contentReputation->created_by = $content->created_by;
                 }
                 $score = ReputationContent::calculateContentReputationScore($content, $container, $forceUpdate);
                 $contentReputation->score = $score;
@@ -112,6 +113,7 @@ class ReputationContent extends ReputationBase {
                 $contentReputation->score_long = ReputationContent::getDecayedScore($score, $timePassed, $lambda_long);
                 $contentReputation->score_short = ReputationContent::getDecayedScore($score, $timePassed, $lambda_short);
                 $contentReputation->updated_at = date('Y-m-d H:i:s');
+                $contentReputation->updated_by = $content->updated_by;
                 $contentReputation->save(false);
 
                 Yii::$app->cache->set($cacheId, $contentReputation, ReputationBase::CACHE_TIME_SECONDS);

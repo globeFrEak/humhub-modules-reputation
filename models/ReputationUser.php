@@ -109,6 +109,7 @@ class ReputationUser extends ReputationBase {
                 }
                 $userReputation->value = ReputationUser::calculateUserReputationScore($user->user_id, $container, $forceUpdate);
                 $userReputation->updated_at = date('Y-m-d H:i:s');
+                $userReputation->updated_by = $container->updated_by;
                 $userReputation->save();
 
                 Yii::$app->cache->set($cacheId, $userReputation, ReputationBase::CACHE_TIME_SECONDS);

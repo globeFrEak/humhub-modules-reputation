@@ -1,5 +1,8 @@
 <?php
 
+/**
+ * @author Philipp Horna (v0.20+) 
+ * */
 use yii\helpers\Html;
 use yii\helpers\Url;
 use humhub\modules\user\models\User;
@@ -7,10 +10,10 @@ use humhub\modules\reputation\models\ReputationUser;
 ?>
 
 <div class="panel panel-default members" id="space-members-panel">
-    <?php echo \humhub\widgets\PanelMenu::widget(['id' => 'space-members-panel']); ?>
+<?php echo \humhub\widgets\PanelMenu::widget(['id' => 'space-members-panel']); ?>
     <div class="panel-heading"><?php echo Yii::t('ReputationModule.widgets_views_spaceUserReputationWidget', '<strong>Space-User</strong> Reputation'); ?></div>
     <div class="panel-body">
-        <?php if (count($users) > 0) : ?>         
+            <?php if (count($users) > 0) : ?>         
             <ul class="media-list">
                 <?php foreach ($users as $reputationUser) : ?>
                     <?php
@@ -53,14 +56,14 @@ use humhub\modules\reputation\models\ReputationUser;
                                         }
                                         ?>
                                     <?php endforeach; ?>
-                                <?php endif; ?>
+        <?php endif; ?>
                             </div>
                         </div>
                     </li>                  
-                <?php endforeach; ?>
+    <?php endforeach; ?>
                 <!-- END: Reputation Results -->
             </ul>  
-        <?php else: ?>
+<?php else: ?>
             <div class="media">          
                 <div class="media-body">         
                     <h4 class="media-heading"><?php echo Yii::t('ReputationModule.widgets_views_spaceUserReputationWidget', 'No Reputation found!'); ?>
@@ -71,12 +74,12 @@ use humhub\modules\reputation\models\ReputationUser;
                 </div></div>
         <?php endif; ?>
 
-        <?php if (count($users) == $maxUsers) : ?>
+<?php if (count($users) == $maxUsers) : ?>
             <br>
             <a href="<?php echo $contentContainer->createUrl('//reputation/space/stats'); ?>" class="btn btn-default btn-sm"><?php echo Yii::t('ReputationModule.widgets_views_spaceUserReputationWidget', 'Show all'); ?></a>
-        <?php endif; ?>
+            <?php endif; ?>
         <div class="pull-right">
-            <?php echo Html::a(Yii::t('ReputationModule.widgets_views_spaceUserReputationWidget', 'Settings'), array('//reputation/profile/config', 'uguid' => Yii::$app->user->guid), array('class' => 'btn btn-default btn-sm')); ?>        
+<?php echo Html::a(Yii::t('ReputationModule.widgets_views_spaceUserReputationWidget', 'Settings'), array('//reputation/profile/config', 'uguid' => Yii::$app->user->guid), array('class' => 'btn btn-default btn-sm')); ?>        
         </div>
     </div>
 </div>

@@ -1,10 +1,12 @@
 <?php
 
 /**
- * @author Anton Kurnitzky (v0.11) & Philipp Horna (v0.20+) */
+ * @author Anton Kurnitzky (v0.11) & Philipp Horna (v0.20+) 
+ **/
 
 namespace humhub\modules\reputation;
 
+use \yii;
 use yii\helpers\Url;
 use humhub\modules\space\models\Space;
 use humhub\modules\user\models\User;
@@ -32,16 +34,6 @@ class Module extends ContentContainerModule {
         return Url::to(['/reputation/admin/config']);
     }
 
-//    public function enableContentContainer(ContentContainerActiveRecord $container){
-//        parent::enable();        
-//        // set all spaces and user reputation to active
-//        $spaces = Space::find()->all();
-//        
-//        foreach($spaces as $space){
-//            $space->enableModule('reputation');
-//        }
-//    }    
-
     /**
      * @inheritdoc
      */
@@ -54,10 +46,7 @@ class Module extends ContentContainerModule {
     }
 
     /**
-     * Returns the url to configure this module in a content container
-     * 
-     * @param ContentContainerActiveRecord $container
-     * @return string the config url
+     * @inheritdoc
      */
     public function getContentContainerConfigUrl(ContentContainerActiveRecord $container) {
         if ($container instanceof Space) {
@@ -66,15 +55,27 @@ class Module extends ContentContainerModule {
     }
 
     /**
-     * Disables module on given content container
-     * 
-     * @param ContentContainerActiveRecord $container the content container
+     * @inheritdoc
      */
     public function disableContentContainer(ContentContainerActiveRecord $container) {
         $this->settings->contentContainer($container)->deleteAll();
         foreach (ReputationUser::findAll(['wall_id' => $container->wall_id]) as $reputationSpace) {
             $reputationSpace->delete();
         }
+    }
+
+    /**
+     * @inheritdoc
+     */
+    public function getContentContainerName(ContentContainerActiveRecord $container) {
+        return Yii::t('ReputationModule.base', 'Reputation');
+    }
+
+    /**
+     * @inheritdoc
+     */
+    public function getContentContainerDescription(ContentContainerActiveRecord $container) {
+        return Yii::t('ReputationModule.base', 'This Module Integrates A Reputation System. It Works With HumHub 0.20+.');
     }
 
 }

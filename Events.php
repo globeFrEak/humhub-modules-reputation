@@ -39,7 +39,7 @@ class Events extends \yii\base\Object {
                     ReputationUser::updateUserReputation($space, true);
                     ReputationContent::updateContentReputation($space, true);
                 }
-                Console::updateProgress( ++$processed, $count_spaces);
+                Console::updateProgress(++$processed, $count_spaces);
             }
         }
         Console::endProgress(true);
@@ -49,13 +49,47 @@ class Events extends \yii\base\Object {
         $count_users = count($spaces);
         Console::startProgress($processed, $count_users, '[Module] calculate REPUTATION for Users...', false);
         foreach ($users as $user) {
-            if ($space->isModuleEnabled('reputation')) {
+            if ($user->isModuleEnabled('reputation')) {
                 self::onUserEnabledAsDefault($user);
-                Console::updateProgress( ++$processed, $count_users);
+                Console::updateProgress(++$processed, $count_users);
             }
         }
         Console::endProgress(true);
         $controller->stdout('done - ' . $processed . ' spaces checked.' . PHP_EOL, Console::FG_GREEN);
+    }
+
+    /**
+     * Set Reputation Module when it is enabled as default on the Space
+     *
+     * @param $space Object
+     */
+    public static function onSpaceEnabledAsDefault($space) {
+        $moduleEnabled = \humhub\modules\space\models\Module::findOne(['space_id' => $space->id, 'module_id' => 'reputation']);
+        $moduleAsDefaultOn = \humhub\modules\space\models\Module::find()->where(['space_id' => 0, 'module_id' => 'reputation', 'state' => 1])->orWhere(['space_id' => 0, 'module_id' => 'reputation', 'state' => 2])->one();
+        if ($moduleEnabled === NULL && $moduleAsDefaultOn != NULL) {
+            $enableModule = new \humhub\modules\space\models\Module();
+            $enableModule->module_id = 'reputation';
+            $enableModule->space_id = $space->id;
+            $enableModule->state = $moduleAsDefaultOn->state;
+            $enableModule->save();
+        }
+    }
+
+    /**
+     * Set Reputation Module when it is enabled as default on the User
+     *
+     * @param $user Object
+     */
+    public static function onUserEnabledAsDefault($user) {
+        $moduleEnabled = \humhub\modules\user\models\Module::findOne(['user_id' => $user->id, 'module_id' => 'reputation']);
+        $moduleAsDefaultOn = \humhub\modules\user\models\Module::find()->where(['user_id' => 0, 'module_id' => 'reputation', 'state' => 1])->orWhere(['user_id' => 0, 'module_id' => 'reputation', 'state' => 2])->one();
+        if ($moduleEnabled === NULL && $moduleAsDefaultOn != NULL) {
+            $enableModule = new \humhub\modules\user\models\Module();
+            $enableModule->module_id = 'reputation';
+            $enableModule->user_id = $user->id;
+            $enableModule->state = $moduleAsDefaultOn->state;
+            $enableModule->save();
+        }
     }
 
     /**
@@ -147,7 +181,7 @@ class Events extends \yii\base\Object {
                 'label' => Yii::t('ReputationModule.base', 'Hot'),
                 'url' => $event->sender->space->createUrl('/reputation/space'),
                 'icon' => '<i class="fa fa-fire"></i>',
-                'isActive' => (Yii::$app->controller->module && Yii::$app->controller->module->id == 'reputation' && Yii::$app->controller->action->id == 'index'),
+                'isActive' => (Yii::$app->controller->module && Yii::$app->controller->module->id == 'reputation' && Yii::$app->controller->id == 'space' && Yii::$app->controller->action->id == 'index'),
                 'group' => 'modules',
                 'sortOrder' => 200,
             ));
@@ -161,8 +195,8 @@ class Events extends \yii\base\Object {
      */
     public static function onIntegrityCheck($event) {
         $integrityChecker = $event->sender;
-        $integrityChecker->showTestHeadline("Validating Reputation Content (" . ReputationContent::find()->count() . " entries)");
-        $integrityChecker->showTestHeadline("Validating Reputation User (" . ReputationUser::find()->count() . " entries)");
+        $integrityChecker->showTestHeadline("Reputation Module (Content) (" . ReputationContent::find()->count() . " entries)");
+        $integrityChecker->showTestHeadline("Reputation Module (User) (" . ReputationUser::find()->count() . " entries)");
     }
 
     /**
@@ -171,30 +205,8 @@ class Events extends \yii\base\Object {
      * @param $event
      */
     public static function onSpaceSidebar($event) {
-        $event->sender->addWidget(widgets\SpaceUserReputationWidget::className(), array('contentContainer' => $event->sender->space), array('sortOrder' => 10));
-    }
-
-    public static function onSpaceEnabledAsDefault($space) {
-        $moduleEnabled = \humhub\modules\space\models\Module::findOne(['space_id' => $space->id, 'module_id' => 'reputation']);
-        $moduleAsDefaultOn = \humhub\modules\space\models\Module::find()->where(['space_id' => 0, 'module_id' => 'reputation', 'state' => 1])->orWhere(['space_id' => 0, 'module_id' => 'reputation', 'state' => 2])->one();
-        if ($moduleEnabled === NULL && $moduleAsDefaultOn != NULL) {
-            $spaceEnableModule = new \humhub\modules\space\models\Module();
-            $spaceEnableModule->module_id = 'reputation';
-            $spaceEnableModule->space_id = $space->id;
-            $spaceEnableModule->state = $moduleAsDefaultOn->state;
-            $spaceEnableModule->save();
-        }
-    }
-
-    public static function onUserEnabledAsDefault($user) {
-        $moduleEnabled = \humhub\modules\user\models\Module::findOne(['user_id' => $user->id, 'module_id' => 'reputation']);
-        $moduleAsDefaultOn = \humhub\modules\user\models\Module::find()->where(['user_id' => 0, 'module_id' => 'reputation', 'state' => 1])->orWhere(['user_id' => 0, 'module_id' => 'reputation', 'state' => 2])->one();
-        if ($moduleEnabled === NULL && $moduleAsDefaultOn != NULL) {
-            $spaceEnableModule = new \humhub\modules\user\models\Module();
-            $spaceEnableModule->module_id = 'reputation';
-            $spaceEnableModule->user_id = $user->id;
-            $spaceEnableModule->state = $moduleAsDefaultOn->state;
-            $spaceEnableModule->save();
+        if ($event->sender->space->isModuleEnabled('reputation')) {
+            $event->sender->addWidget(widgets\SpaceUserReputationWidget::className(), array('contentContainer' => $event->sender->space), array('sortOrder' => 10));
         }
     }
 
