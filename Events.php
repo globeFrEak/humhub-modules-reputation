@@ -28,15 +28,15 @@ class Events extends \yii\base\Object {
         $count_spaces = count($spaces);
         $processed = 0;
         Console::startProgress($processed, $count_spaces, '[Module] calculate REPUTATION for Spaces...', false);
-        foreach ($spaces as $space) {
+        foreach ($spaces as $space) {           
             if ($space->isModuleEnabled('reputation')) {
                 $cronJobEnabled = ReputationBase::getSpaceSettings($space);
-                if ($cronJobEnabled === 1) {
+                if ($cronJobEnabled['cron_job'] = 1) {                         
                     self::onSpaceEnabledAsDefault($space);
                     ReputationUser::updateUserReputation($space, true);
                     ReputationContent::updateContentReputation($space, true);
-                }
-                Console::updateProgress(++$processed, $count_spaces);
+                    Console::updateProgress(++$processed, $count_spaces);
+                }                
             }
         }
         Console::endProgress(true);
