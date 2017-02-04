@@ -8,59 +8,60 @@
 namespace humhub\modules\reputation\controllers;
 
 use Yii;
+use yii\web\HttpException;
 use humhub\modules\reputation\models\ReputationUser;
 use humhub\modules\reputation\models\ReputationBase;
 use humhub\modules\content\components\ContentContainerController;
+
 /**
  * All user reputation actions a admin can use and see
  *
  * @author Anton Kurnitzky
  */
 class AdminController extends ContentContainerController {
-
-    /** access level of the user currently logged in. 0 -> no write access / 1 -> create links and edit own links / 2 -> full write access. * */
-    public $accessLevel = 0;
-
-    /**
-     * Automatically loads the underlying contentContainer (User/Space) by using
-     * the uguid/sguid request parameter
-     *
-     * @return boolean
-     */
-    public function init() {
-        $retVal = parent::init();
-        $this->accessLevel = $this->getAccessLevel();
-        return $retVal;
-    }
-
-    /**
-     * @return array action filters
-     */
-    public function filters() {
-        return array(
-            'accessControl', // perform access control for CRUD operations
-        );
-    }
-
-    /**
-     * Get the acces level to the linklist of the currently logged in user.
-     * @return number 0 -> no write access / 1 -> create links and edit own links / 2 -> full write access
-     */
-    private function getAccessLevel() {
-        if ($this->contentContainer instanceof User) {
-            return $this->contentContainer->id == Yii::$app->user->id ? 2 : 0;
-        } else if ($this->contentContainer instanceof Space) {
-            return $this->contentContainer->isAdmin(Yii::$app->user->id) ? 2 : 1;
-        }
-    }
+//
+//    /** access level of the user currently logged in. 0 -> no write access / 1 -> create links and edit own links / 2 -> full write access. * */
+//    public $accessLevel = 0;
+//
+//    /**
+//     * Automatically loads the underlying contentContainer (User/Space) by using
+//     * the uguid/sguid request parameter
+//     *
+//     * @return boolean
+//     */
+//    public function init() {
+//        $retVal = parent::init();
+//        $this->accessLevel = $this->getAccessLevel();
+//        return $retVal;
+//    }
+//
+//    /**
+//     * @return array action filters
+//     */
+//    public function filters() {
+//        return array(
+//            'accessControl', // perform access control for CRUD operations
+//        );
+//    }
+//
+//    /**
+//     * Get the acces level to the linklist of the currently logged in user.
+//     * @return number 0 -> no write access / 1 -> create links and edit own links / 2 -> full write access
+//     */
+//    private function getAccessLevel() {
+//        if ($this->contentContainer instanceof User) {
+//            return $this->contentContainer->id == Yii::$app->user->id ? 2 : 0;
+//        } else if ($this->contentContainer instanceof Space) {
+//            return $this->contentContainer->isAdmin(Yii::$app->user->id) ? 2 : 1;
+//        }
+//    }
 
     /*
      * Allow only space admins to see configuration
      */
-
     public function beforeAction($action) {
-        if (!$this->getSpace()->isAdmin()) {
-            throw new HttpException(403, 'Access denied - Space Administrator only!');
+        if (!$this->contentContainer->permissionManager->can(new \humhub\modules\content\permissions\ManageContent())) {
+            throw new HttpException(400, 'Access denied!');
         }
         return parent::beforeAction($action);
     }
@@ -72,7 +73,7 @@ class AdminController extends ContentContainerController {
      * otherwise cache is used
      */
 
-    public function actionIndex() {
+    public function actionIndex() {        
         $forceUpdate = false;
         if (isset($_GET['forceUpdate'])) {
             $forceUpdate = true;
@@ -119,4 +120,5 @@ class AdminController extends ContentContainerController {
 
         return $lastUpdatedBefore;
     }
+
 }

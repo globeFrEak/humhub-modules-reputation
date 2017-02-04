@@ -9,8 +9,8 @@ namespace humhub\modules\reputation\models;
 
 use Yii;
 
-class SpaceSettings extends \yii\base\Model
-{
+class SpaceSettings extends \yii\base\Model {
+
     public $functions;
     public $logarithm_base;
     public $create_content;
@@ -20,6 +20,7 @@ class SpaceSettings extends \yii\base\Model
     public $daily_limit;
     public $decrease_weighting;
     public $cron_job;
+    public $ranking_new_period;
     // advanced settings
     public $lambda_long; // ranking hot
     public $lambda_short; // ranking rising
@@ -27,8 +28,8 @@ class SpaceSettings extends \yii\base\Model
     /**
      * Declares the validation rules.
      */
-    public function rules()
-    {
+
+    public function rules() {
         return array(
             array('functions', 'required'),
             array('logarithm_base', 'required'),
@@ -49,6 +50,8 @@ class SpaceSettings extends \yii\base\Model
             array('lambda_long', 'double'),
             array('lambda_short', 'required'),
             array('lambda_short', 'double'),
+            array('ranking_new_period', 'required'),
+            array('ranking_new_period', 'number', 'min' => 1)
         );
     }
 
@@ -57,8 +60,7 @@ class SpaceSettings extends \yii\base\Model
      * If not declared here, an attribute would have a label that is
      * the same as its name with the first letter in upper case.
      */
-    public function attributeLabels()
-    {
+    public function attributeLabels() {
         return array(
             'functions' => Yii::t('ReputationModule.forms_adminController_settings', 'Function'),
             'logarithm_base' => Yii::t('ReputationModule.forms_adminController_settings', 'Logarithm base'),
@@ -71,6 +73,8 @@ class SpaceSettings extends \yii\base\Model
             'cron_job' => Yii::t('ReputationModule.forms_adminController_settings', 'Update reputation data on hourly cron job'),
             'lambda_long' => Yii::t('ReputationModule.forms_adminController_settings', 'Exponential decrease for Ranking Hot'),
             'lambda_short' => Yii::t('ReputationModule.forms_adminController_settings', 'Exponential decrease for Ranking Rising'),
+            'ranking_new_period' => Yii::t('ReputationModule.forms_adminController_settings', 'Time in hours for the "NEW" filter to show Content'),
         );
     }
+
 }

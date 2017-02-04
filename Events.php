@@ -30,16 +30,13 @@ class Events extends \yii\base\Object {
         Console::startProgress($processed, $count_spaces, '[Module] calculate REPUTATION for Spaces...', false);
         foreach ($spaces as $space) {
             if ($space->isModuleEnabled('reputation')) {
-                $cronJobEnabled = ContentContainerSetting::findOne(['module_id' => 'reputation', 'contentcontainer_id' => $space->wall_id, 'name' => 'cron_job', 'value' => '1']);
-                if ($cronJobEnabled === NULL) {
-                    ReputationBase::setSpaceSettings($space);
-                }
-                if ($cronJobEnabled) {
+                $cronJobEnabled = ReputationBase::getSpaceSettings($space);
+                if ($cronJobEnabled === 1) {
                     self::onSpaceEnabledAsDefault($space);
                     ReputationUser::updateUserReputation($space, true);
                     ReputationContent::updateContentReputation($space, true);
                 }
-                Console::updateProgress( ++$processed, $count_spaces);
+                Console::updateProgress(++$processed, $count_spaces);
             }
         }
         Console::endProgress(true);
@@ -51,7 +48,7 @@ class Events extends \yii\base\Object {
         foreach ($users as $user) {
             if ($user->isModuleEnabled('reputation')) {
                 self::onUserEnabledAsDefault($user);
-                Console::updateProgress( ++$processed, $count_users);
+                Console::updateProgress(++$processed, $count_users);
             }
         }
         Console::endProgress(true);

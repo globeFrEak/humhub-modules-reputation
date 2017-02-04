@@ -130,9 +130,9 @@ class ReputationUser extends ReputationBase {
      * @return int: User reputation score inside this space
      */
     private function calculateUserReputationScore($userId, $container, $forceUpdate = false) {
-        $spaceSettings = ReputationBase::getSpaceSettings($container); // array containg all space settings        
-        $dailyLimit = $spaceSettings['daily_limit']; // max points a user can receive on one single day
-        $decreaseWeighting = $spaceSettings['decrease_weighting'];  // should weighting of repeating actions be decreased
+        $spaceSettings = ReputationBase::getSpaceSettings($container); 
+        $dailyLimit = $spaceSettings['daily_limit']; 
+        $decreaseWeighting = $spaceSettings['decrease_weighting'];  
 
         $spaceContent = ReputationBase::getContentFromSpace($container, $forceUpdate);
 

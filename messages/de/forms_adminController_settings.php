@@ -14,4 +14,5 @@ return array(
     'Decrease weighting per post' => 'Abnehmende Gewichtung pro Beitrag',
     'Exponential decrease for Ranking Rising' => 'Expotentielle Degression für die Sortierung "Aufsteigend"',
     'Exponential decrease for Ranking Hot' => 'Expotentielle Degression für die Sortierung "Beliebt"',
+    'Time in hours for the "NEW" filter to show Content' => 'Zeit in Stunden für den Filter "NEU", um Inhalte anzuzeigen',
 );

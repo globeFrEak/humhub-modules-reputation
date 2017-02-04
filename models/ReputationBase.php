@@ -38,8 +38,7 @@ class ReputationBase extends \humhub\components\ActiveRecord {
     const DEFAULT_CRON_JOB = '1';
     const DEFAULT_LAMBDA_SHORT = '0.00120338';
     const DEFAULT_LAMBDA_LONG = '0.000024558786159';
-
-    //const DEFAULT_RANKING_NEW_PERIOD = '36';
+    const DEFAULT_RANKING_NEW_PERIOD = '36';
 
     /**
      * Returns all content objects (posts, polls, etc.) from this space
@@ -109,7 +108,7 @@ class ReputationBase extends \humhub\components\ActiveRecord {
      * @param $container Object 
      * @return $spaceSettings array
      */
-    protected function getSpaceSettings($container) {
+    public function getSpaceSettings($container) {
         $getSettings = ContentContainerSetting::findAll(['module_id' => 'reputation', 'contentcontainer_id' => $container->wall_id]);
 
         if (count($getSettings) > 0) {
@@ -127,7 +126,7 @@ class ReputationBase extends \humhub\components\ActiveRecord {
      * @param $container Object 
      * @return $spaceSettings array
      */
-    public function setSpaceSettings($container) {       
+    protected function setSpaceSettings($container) {       
         $spaceSettings = [
             'functions' => self::DEFAULT_FUNCTION,
             'logarithm_base' => self::DEFAULT_LOGARITHM_BASE,
@@ -140,8 +139,9 @@ class ReputationBase extends \humhub\components\ActiveRecord {
             'decrease_weighting' => self::DEFAULT_DECREASE_WEIGHTING,
             'cron_job' => self::DEFAULT_CRON_JOB,
             'lambda_long' => self::DEFAULT_LAMBDA_SHORT,
-            'lambda_short' => self::DEFAULT_LAMBDA_LONG];
-
+            'lambda_short' => self::DEFAULT_LAMBDA_LONG,
+            'ranking_new_period' => self::DEFAULT_RANKING_NEW_PERIOD];
+        
         foreach ($spaceSettings as $name => $value) {
             Setting::Set($container->id, $name, $value, 'reputation');
         }

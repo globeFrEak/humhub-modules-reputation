@@ -14,7 +14,7 @@ use humhub\modules\reputation\models\ReputationBase;
 
         <?php
         $form = ActiveForm::begin([
-                    'action' => ['settings-submit', 'sguid' => $space->guid],
+                    'action' => ['settings', 'sguid' => $space->guid],
                     'method' => 'post',
                     'id' => 'configure-form',
                     'enableAjaxValidation' => false,
@@ -97,6 +97,15 @@ use humhub\modules\reputation\models\ReputationBase;
                     dropDownList($functions, array('class' => 'form-control', 'id' => 'join_visibility_dropdown', 'hint' => Yii::t('ReputationModule.views_adminReputation_show', 'Should the hourly cron job update reputation data for this space?')));
             ?>
 
+        </div>
+
+        <div class="form-group">   
+            <?php
+            echo $form->
+                    field($model, 'ranking_new_period')->
+                    label(Yii::t('ReputationModule.forms_adminController_settings', 'Time in hours for the "NEW" filter to show Content'))->
+                    textInput(array('class' => 'form-control'));
+            ?>           
         </div>
 
         <p>

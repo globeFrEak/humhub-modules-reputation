@@ -84,8 +84,8 @@ class ReputationContent extends ReputationBase {
      * @param bool $forceUpdate : Ignore cache
      */
     public function updateContentReputation($container, $forceUpdate = false) {
-        $spaceContent = ReputationBase::getContentFromSpace($container);
         $spaceSettings = ReputationBase::getSpaceSettings($container);
+        $spaceContent = ReputationBase::getContentFromSpace($container);        
         $lambda_short = $spaceSettings['lambda_short'];
         $lambda_long = $spaceSettings['lambda_long'];
 

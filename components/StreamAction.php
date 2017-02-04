@@ -7,8 +7,8 @@
 
 namespace humhub\modules\reputation\components;
 
-use humhub\modules\content\components\actions\ContentContainerStream;
 use Yii;
+use humhub\modules\content\components\actions\ContentContainerStream;
 
 class StreamAction extends ContentContainerStream {
 
@@ -39,6 +39,7 @@ class StreamAction extends ContentContainerStream {
     const MODE_RISING = 'r';
 
     public $contentContainer;
+    public $spaceSettings;
 
     public function init() {
         parent::init();
@@ -67,13 +68,13 @@ class StreamAction extends ContentContainerStream {
                 $this->activeQuery->andWhere('wall_entry.content_id = :from', $params);
             }
             $this->activeQuery->orderBy('rc.score_long DESC');
-        } elseif ($this->sort === self::MODE_NEW) {
+        } elseif ($this->sort === self::MODE_NEW) {           
             $this->activeQuery->leftJoin('reputation_content AS rc', 'rc.content_id = wall_entry.content_id');
             if ($this->from != "") {
                 $params = array(':from' => $this->from);
                 $this->activeQuery->andWhere('wall_entry.content_id = :from', $params);
             }
-            $this->activeQuery->andWhere("content.created_at >= DATE_SUB(NOW(), INTERVAL 36 HOUR)");
+            $this->activeQuery->andWhere("content.created_at >= DATE_SUB(NOW(), INTERVAL :newRanking HOUR)", [':newRanking' => $this->spaceSettings['ranking_new_period']]);
             $this->activeQuery->orderBy('rc.score DESC');
         } elseif ($this->sort === self::MODE_TOP) {
             $this->activeQuery->leftJoin('reputation_content AS rc', 'rc.content_id = wall_entry.content_id');
