@@ -24,7 +24,7 @@ return [
         ['class' => IntegrityController::className(), 'event' => IntegrityController::EVENT_ON_RUN, 'callback' => ['humhub\modules\reputation\Events', 'onIntegrityCheck']],
         ['class' => User::className(), 'event' => User::EVENT_BEFORE_DELETE, 'callback' => ['humhub\modules\reputation\Events', 'onUserDelete']],
         ['class' => Membership::className(), 'event' => Membership::EVENT_BEFORE_DELETE, 'callback' => ['humhub\modules\reputation\Events', 'onSpaceMembershipDelete']],
-        ['class' => Space::className(), 'event' => Space::EVENT_BEFORE_DELETE, 'callback' => ['humhub\modules\reputation\Events', 'onSpaceDelete']],
+        ['class' => Space::className(), 'event' => Space::EVENT_BEFORE_DELETE, 'callback' => ['humhub\modules\reputation\Events', 'onSpaceDelete']],       
         ['class' => Sidebar::className(), 'event' => Sidebar::EVENT_RUN, 'callback' => ['humhub\modules\reputation\Events', 'onSpaceSidebar']],
         ['class' => ProfileMenu::className(), 'event' => ProfileMenu::EVENT_INIT, 'callback' => ['humhub\modules\reputation\Events', 'onProfileMenuInit']],
         ['class' => DefaultMenu::className(), 'event' => DefaultMenu::EVENT_INIT, 'callback' => ['humhub\modules\reputation\Events', 'onSpaceAdminMenuWidgetInit']],

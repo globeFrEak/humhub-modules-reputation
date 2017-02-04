@@ -8,8 +8,6 @@
 namespace humhub\modules\reputation\models;
 
 use Yii;
-use humhub\modules\content\models\Content;
-use humhub\modules\space\models\Space;
 use \DateTime;
 
 /**
@@ -141,12 +139,9 @@ class ReputationContent extends ReputationBase {
      * @param $space
      */
     public function calculateContentReputationScore($content, $container, $forceUpdate) {
-        // Get space settings. Use default values if space module settings are not configured yet
         $spaceSettings = ReputationBase::getSpaceSettings($container);
-
         $cacheId = 'likes_earned_cache_' . $content->id;
         $likes = ReputationBase::getLikesFromContent($content, $content->created_by, $cacheId, $forceUpdate);
-
         if ($container->isModuleEnabled('favorite')) {
             $scoreCount = 1;
             // now count the favorites this content earned from other users
@@ -155,10 +150,8 @@ class ReputationContent extends ReputationBase {
         } else {
             $favorites = array();
         }
-
         $cacheId = 'comments_earned_cache_' . $content->id;
         $comments = ReputationBase::getCommentsFromContent($content, $content->created_by, $cacheId, true, $forceUpdate);
-
         return (count($likes) * $spaceSettings['smb_likes_content'] + count($favorites) * $spaceSettings['smb_favorites_content'] + count($comments) * $spaceSettings['smb_comments_content']);
     }
 

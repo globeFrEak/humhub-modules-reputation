@@ -127,7 +127,7 @@ class ReputationBase extends \humhub\components\ActiveRecord {
      * @param $container Object 
      * @return $spaceSettings array
      */
-    public function setSpaceSettings($container) {
+    public function setSpaceSettings($container) {       
         $spaceSettings = [
             'functions' => self::DEFAULT_FUNCTION,
             'logarithm_base' => self::DEFAULT_LOGARITHM_BASE,
@@ -143,7 +143,7 @@ class ReputationBase extends \humhub\components\ActiveRecord {
             'lambda_short' => self::DEFAULT_LAMBDA_LONG];
 
         foreach ($spaceSettings as $name => $value) {
-            Setting::Set($container, $name, $value, 'reputation');
+            Setting::Set($container->id, $name, $value, 'reputation');
         }
         return $spaceSettings;
     }

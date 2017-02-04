@@ -39,7 +39,7 @@ class Events extends \yii\base\Object {
                     ReputationUser::updateUserReputation($space, true);
                     ReputationContent::updateContentReputation($space, true);
                 }
-                Console::updateProgress(++$processed, $count_spaces);
+                Console::updateProgress( ++$processed, $count_spaces);
             }
         }
         Console::endProgress(true);
@@ -51,7 +51,7 @@ class Events extends \yii\base\Object {
         foreach ($users as $user) {
             if ($user->isModuleEnabled('reputation')) {
                 self::onUserEnabledAsDefault($user);
-                Console::updateProgress(++$processed, $count_users);
+                Console::updateProgress( ++$processed, $count_users);
             }
         }
         Console::endProgress(true);
@@ -120,7 +120,7 @@ class Events extends \yii\base\Object {
      * @param type $event
      */
     public static function onSpaceDelete($event) {
-        foreach (ReputationUser::findAll(['space_id' => $event->sender->id]) as $reputationSpace) {
+        foreach (ReputationUser::findAll(['wall_id' => $event->sender->contentcontainer_id]) as $reputationSpace) {
             $reputationSpace->delete();
         }
     }
