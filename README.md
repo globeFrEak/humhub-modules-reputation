@@ -1,10 +1,10 @@
-#UNDER DEVELOPMENT (Alpha)
-#### Reputation module for HumHub 0.20/1.x (Yii2)
+## Reputation module for HumHub [working on 1.1.0-* (Yii2)]
+### Under Development - please report issues!
 
 This module integrates a reputation system into HumHub.
 
 ##About
-__Author:__ Anton Kurnitzky / Philipp Horna (Port to Humhub 1.x)
+__Author:__ Anton Kurnitzky / Philipp Horna (Port to Humhub 1.1.x)
 
 This module was developed as part of my master thesis at the [Technische Hochschule Nürnberg](http://www.th-nuernberg.eu).
 It's default settings are designed to work for a social network in an educational context. By customizing the settings you can probably use this in any other context too.
@@ -14,7 +14,6 @@ It's default settings are designed to work for a social network in an educationa
 * Activate the module on the HumHub admin page. Set it as default for space to activate it in all spaces. You should set is as default for user profiles so users can see their own reputation.
 * If not set to default for spaces, activate the module on each space you want to get an entry in the space navigation menu
 * If not set to default for user profiles, a user has to manually activate this module on their profile page.
-* Install my favorite-module if you want more reputation-sources.
 
 ##Usage
 ### Everybody
@@ -33,7 +32,6 @@ At the bottom you have three actions:
 
 * Update: Refresh the data
 * Configuration: Opens the module configuration for this space. [More info](#Configuration).
-* Export as CSV: Export data to a CSV file. Useful to import this data to other systems. [More info](#CSV Export)
 
 ### Users
 Inside your Profile menu you will see a new menu "Reputation".
@@ -56,7 +54,7 @@ To share your reputation with other users you can enable this per space. If you 
 
 ##Technical
 ### Update interval
-This module uses the [hourly cron job of HumHub](https://github.com/humhub/humhub/blob/master/protected/docs/guide/administration/installation.md#enable-cron-jobs). So make sure you properly configured the cron job on your system. If you want more up to date data you should change the cron schedule.
+This module uses the [hourly cron job of HumHub](https://www.humhub.org/docs/guide-admin-installation.html#enable-cron-jobs). So make sure you properly configured the cron job on your system. If you want more up to date data you should change the cron schedule.
 
 It also uses [Yii Caching](http://www.yiiframework.com/doc/guide/1.1/en/caching.overview) to improve loading times. The cache is set to 15minutes. So if you open a view (e.g. "User Reptuation") it will use cached data if it's newer than 15 minutes. Otherwise it will refresh the data before displaying the view.
 If you want to see more up to date data you can always click on the "Update" button.
