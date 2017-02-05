@@ -86,17 +86,19 @@ class AdminController extends ContentContainerController {
         $params = [':spaceId' => $space->id];
         $query = ReputationUser::find();
         $query->where('space_id=:spaceId', $params);
-        $query->orderBy('reputation_user.space_id ASC');
+        $query->orderBy('reputation_user.space_id ASC');        
+
+        $countQuery = clone $query;
+        $itemCount = $countQuery->count();        
+        $pagination = new \yii\data\Pagination(['totalCount' => $itemCount, 'pageSize' => 10]);
+        $query->offset($pagination->offset)->limit($pagination->limit);
+        
         $reputations = $query->all();
-
-        $itemCount = count($reputations);
-
-        $pagination = new \yii\data\Pagination(['totalCount' => $itemCount]);
 
         $module = Yii::$app->getModule('reputation');
         $function = $module->settings->space()->get('functions', ReputationBase::DEFAULT_FUNCTION);
 
-        $lastUpdatedBefore = $this->GetLastUpdateTimeInMinutes($reputations);
+        $lastUpdatedBefore = $this->GetLastUpdateTimeInMinutes($reputations);        
 
         return $this->render('index', array(
                     'function' => $function,
