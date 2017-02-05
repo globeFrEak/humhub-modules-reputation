@@ -75,7 +75,7 @@ class Module extends ContentContainerModule {
      * @inheritdoc
      */
     public function getContentContainerDescription(ContentContainerActiveRecord $container) {
-        return Yii::t('ReputationModule.base', 'This Module Integrates A Reputation System. It Works With HumHub 0.20+.');
+        return Yii::t('ReputationModule.base', 'This Module Integrates A Reputation System Into HumHub. It Works With HumHub 1.1.x +.');
     }
 
 }
