@@ -75,18 +75,15 @@ class AdminController extends ContentContainerController {
 
     public function actionIndex() {        
         $forceUpdate = false;
-        if (isset($_GET['forceUpdate'])) {
-            $forceUpdate = true;
+        if (Yii::$app->request->get('forceUpdate') === 1) {
+            $forceUpdate = true;               
         }
-
         $space = $this->contentContainer;
-
         ReputationUser::updateUserReputation($space, $forceUpdate);
-
         $params = [':spaceId' => $space->id];
         $query = ReputationUser::find();
         $query->where('space_id=:spaceId', $params);
-        $query->orderBy('reputation_user.space_id ASC');        
+        $query->orderBy('reputation_user.value DESC');        
 
         $countQuery = clone $query;
         $itemCount = $countQuery->count();        
