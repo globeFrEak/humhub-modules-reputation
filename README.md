@@ -18,7 +18,7 @@ It's default settings are designed to work for a social network in an educationa
 ##Usage
 ### Everybody
 Inside the space menu you will see a new menu called "Hot". This menu provides four new sorting options that are possible trough the reputation system. The ranking of the posts depends on the sorting option and your module configuration.
-![Ranking](assets/screen2.png)
+![Ranking](https://raw.githubusercontent.com/globeFrEak/humhub-modules-reputation/master/assets/reputation_space_view_new_sorting.png)
 
 * Hot: The default sorting option. This option prioritizes posts that are younger than on week and have a high number of likes, favorites and comments.
 * Top: This option shows you the best rated posts at the top.
@@ -27,7 +27,7 @@ Inside the space menu you will see a new menu called "Hot". This menu provides f
 
 ### Space-Admins
 As Space-Admin you will get a new menu item called "User Reputation". Inside this menu you will see a list of all space members and their respective reputation score.
-![UserReputation](assets/screen1.png)
+![UserReputation](https://raw.githubusercontent.com/globeFrEak/humhub-modules-reputation/master/assets/reputation_spaceadmin_view.png)
 At the bottom you have three actions:
 
 * Update: Refresh the data
@@ -35,13 +35,13 @@ At the bottom you have three actions:
 
 ### Users
 Inside your Profile menu you will see a new menu "Reputation".
-![ProfileReputation](assets/screen4.png)
+![ProfileReputation](https://raw.githubusercontent.com/globeFrEak/humhub-modules-reputation/master/assets/reputation_user_settings.png)
 Here you see all the spaces you're a member of and that have the reputation module enabled.
 You can see your reputation score and the time this score was last updated.
 To share your reputation with other users you can enable this per space. If you enable this every other user inside the HumHub installation can see your reputation. This is an explicit opt-in option. To set this to enabled for all users you have to set the visible column in the table reputation_user to 1.
 
 ##Configuration
-![ReputationSettings](assets/screen3.png)
+![ReputationSettings](https://raw.githubusercontent.com/globeFrEak/humhub-modules-reputation/master/assets/reputation_space_config.png)
 
 * Function: Use a linear function that just show the score the user reached or use a logarithmic function. The logarithmic function is a good motivator because you reach a high score with little effort. For pure comparision the linear setting should be fine. **Default** is Logarithmic.
 * Base: This is only visible if you use the logarithmic function. Set the base for the logarithmic function. When you set it to 1000 a user needs 1000 points to get a value of 100%. But he only needs 32 points to get above 50%. **Default** is 100.
