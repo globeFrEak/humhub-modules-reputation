@@ -1,9 +1,9 @@
 <?php
-/*
- * @author Anton Kurnitzky
- */
+/**
+ * @author Anton Kurnitzky (v0.11) & Philipp Horna (v0.20+) 
+ * */
 return array(
-    '<strong>Space-User</strong> Reputation' => '<strong>Space-Mitglieder</strong> Reputation',
+    '<strong>Space User</strong> Reputation' => '<strong>Space Mitglieder</strong> Reputation',
     'Show all' => 'Alle anzeigen',
     'Settings' => 'Einstellungen',
     'No Reputation found!' => 'Keine Reputation gefunden!',

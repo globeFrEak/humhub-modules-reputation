@@ -11,7 +11,7 @@ use humhub\modules\reputation\models\ReputationUser;
 
 <div class="panel panel-default members" id="space-members-panel">
     <?php echo \humhub\widgets\PanelMenu::widget(['id' => 'space-members-panel']); ?>
-    <div class="panel-heading"><?php echo Yii::t('ReputationModule.widgets_views_spaceUserReputationWidget', '<strong>Space-User</strong> Reputation'); ?></div>
+    <div class="panel-heading"><?php echo Yii::t('ReputationModule.widgets_views_spaceUserReputationWidget', '<strong>Space User</strong> Reputation'); ?></div>
     <div>
         <?php if (count($users) > 0) : ?>         
             <ul class="media-list">
