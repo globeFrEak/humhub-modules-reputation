@@ -1,4 +1,4 @@
-## Reputation module for HumHub [working on 1.1.0 (Yii2)]
+## Reputation module for HumHub [working on 1.1.x (Yii2)]
 ### Under Development - please report issues!
 
 This module integrates a reputation system into HumHub.
