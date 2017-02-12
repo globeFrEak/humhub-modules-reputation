@@ -5,7 +5,7 @@
  * */
 return array(
     'Reputation' => 'Reputation',
-    'This Module Integrates A Reputation System Into HumHub. It Works With HumHub 1.1.x +.' => 'Dieses Modul integriert ein Reputations-System. Es funktioniert ab Humhub 1.1.x und größer!',
+    'This Module Integrates A Reputation System Into HumHub. It Works With HumHub 1.2.x +.' => 'Dieses Modul integriert ein Reputations-System. Es funktioniert ab Humhub 1.2.x und größer!',
     'User Reputation' => 'Reputation',
     'Save' => 'Speichern',
     'Logarithmic' => 'Logarithmisch',

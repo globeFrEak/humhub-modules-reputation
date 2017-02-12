@@ -47,13 +47,13 @@ class ReputationBase extends \humhub\components\ActiveRecord {
      * @param bool $forceUpdate : Ignore cache
      * @return Content[]
      */
-    public function getContentFromSpace($container, $forceUpdate = false) {
-        $cacheId = 'posts_created_cache' . '_' . $container->wall_id;
+    public function getContentFromSpace($space, $forceUpdate = false) {
+        $cacheId = 'posts_created_cache' . '_' . $space->id;
         $spaceContent = Yii::$app->cache->get($cacheId);
         if ($spaceContent === false || $forceUpdate === true) {
 
             $condition = 'contentcontainer_id=:spaceId AND object_model!=:activity';
-            $params = [':spaceId' => $container->wall_id, ':activity' => 'humhub\modules\activity\models\Activity'];
+            $params = [':spaceId' => $space->id, ':activity' => 'humhub\modules\activity\models\Activity'];
             $query = Content::find()
                     ->where($condition, $params)
                     ->all();
@@ -109,7 +109,7 @@ class ReputationBase extends \humhub\components\ActiveRecord {
      * @return $spaceSettings array
      */
     public function getSpaceSettings($container) {
-        $getSettings = ContentContainerSetting::findAll(['module_id' => 'reputation', 'contentcontainer_id' => $container->wall_id]);
+        $getSettings = ContentContainerSetting::findAll(['module_id' => 'reputation', 'contentcontainer_id' => $container->id]);
 
         if (count($getSettings) > 0) {
             foreach ($getSettings as $setting) {

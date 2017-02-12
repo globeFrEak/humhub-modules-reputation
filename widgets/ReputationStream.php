@@ -2,23 +2,15 @@
 
 namespace humhub\modules\reputation\widgets;
 
-use humhub\modules\content\widgets\Stream;
+use humhub\modules\stream\widgets\StreamViewer;
 
-class ReputationStream extends Stream {
-
-    public function init() {
-        parent::init();
-    }
+class ReputationStream extends StreamViewer {
 
     /**
      * @inheritdoc
      */
     protected function getStreamUrl() {
         $params = array_merge([
-            'limit' => '-limit-',
-            'filters' => '-filter-',
-            'sort' => '-sort-',
-            'from' => '-from-',
             'mode' => \humhub\modules\reputation\components\StreamAction::MODE_HOT
                 ], $this->streamActionParams);
 
@@ -28,10 +20,6 @@ class ReputationStream extends Stream {
             array_unshift($params, $this->streamAction);
             return Url::to($params);
         }
-    }
-
-    public function run() {
-        return $this->render('stream', ['streamUrl' => $this->getStreamUrl(), 'showFilters' => $this->showFilters, 'filters' => $this->filters]);
     }
 
 }

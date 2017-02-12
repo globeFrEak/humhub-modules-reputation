@@ -59,7 +59,7 @@ class Module extends ContentContainerModule {
      */
     public function disableContentContainer(ContentContainerActiveRecord $container) {
         $this->settings->contentContainer($container)->deleteAll();
-        foreach (ReputationUser::findAll(['wall_id' => $container->wall_id]) as $reputationSpace) {
+        foreach (ReputationUser::findAll(['id' => $container->id]) as $reputationSpace) {
             $reputationSpace->delete();
         }
     }
@@ -75,7 +75,7 @@ class Module extends ContentContainerModule {
      * @inheritdoc
      */
     public function getContentContainerDescription(ContentContainerActiveRecord $container) {
-        return Yii::t('ReputationModule.base', 'This Module Integrates A Reputation System Into HumHub. It Works With HumHub 1.1.x +.');
+        return Yii::t('ReputationModule.base', 'This Module Integrates A Reputation System Into HumHub. It Works With HumHub 1.2.x +.');
     }
 
 }

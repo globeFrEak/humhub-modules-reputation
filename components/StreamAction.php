@@ -8,7 +8,7 @@
 namespace humhub\modules\reputation\components;
 
 use Yii;
-use humhub\modules\content\components\actions\ContentContainerStream;
+use humhub\modules\stream\actions\ContentContainerStream;
 
 class StreamAction extends ContentContainerStream {
 
@@ -53,8 +53,7 @@ class StreamAction extends ContentContainerStream {
         } elseif ($sort === self::MODE_RISING) {
             $this->sort = $sort;
         }
-        $this->setupCriteria();
-    }
+    }  
 
     public function setupCriteria() {
         parent::setupCriteria();
@@ -62,32 +61,32 @@ class StreamAction extends ContentContainerStream {
          * Setup Sorting
          */
         if ($this->sort === self::MODE_HOT) {
-            $this->activeQuery->leftJoin('reputation_content AS rc', 'rc.content_id = wall_entry.content_id');
+            $this->activeQuery->leftJoin('reputation_content AS rc', 'rc.content_id = content.id');
             if ($this->from != "") {
                 $params = array(':from' => $this->from);
-                $this->activeQuery->andWhere('wall_entry.content_id = :from', $params);
+                $this->activeQuery->andWhere('content.id = :from', $params);
             }
             $this->activeQuery->orderBy('rc.score_long DESC');
-        } elseif ($this->sort === self::MODE_NEW) {           
-            $this->activeQuery->leftJoin('reputation_content AS rc', 'rc.content_id = wall_entry.content_id');
+        } elseif ($this->sort === self::MODE_NEW) {
+            $this->activeQuery->leftJoin('reputation_content AS rc', 'rc.content_id = content.id');
             if ($this->from != "") {
                 $params = array(':from' => $this->from);
-                $this->activeQuery->andWhere('wall_entry.content_id = :from', $params);
+                $this->activeQuery->andWhere('content.id = :from', $params);
             }
             $this->activeQuery->andWhere("content.created_at >= DATE_SUB(NOW(), INTERVAL :newRanking HOUR)", [':newRanking' => $this->spaceSettings['ranking_new_period']]);
             $this->activeQuery->orderBy('rc.score DESC');
         } elseif ($this->sort === self::MODE_TOP) {
-            $this->activeQuery->leftJoin('reputation_content AS rc', 'rc.content_id = wall_entry.content_id');
+            $this->activeQuery->leftJoin('reputation_content AS rc', 'rc.content_id = content.id');
             if ($this->from != "") {
                 $params = array(':from' => $this->from);
-                $this->activeQuery->andWhere('wall_entry.content_id = :from', $params);
+                $this->activeQuery->andWhere('content.id = :from', $params);
             }
             $this->activeQuery->orderBy('rc.score DESC');
         } elseif ($this->sort === self::MODE_RISING) {
-            $this->activeQuery->leftJoin('reputation_content AS rc', 'rc.content_id = wall_entry.content_id');
+            $this->activeQuery->leftJoin('reputation_content AS rc', 'rc.content_id = content.id');
             if ($this->from != "") {
                 $params = array(':from' => $this->from);
-                $this->activeQuery->andWhere('wall_entry.content_id = :from', $params);
+                $this->activeQuery->andWhere('content.id = :from', $params);
             }
             $this->activeQuery->orderBy('rc.score_short DESC');
         }

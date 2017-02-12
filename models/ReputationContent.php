@@ -83,15 +83,15 @@ class ReputationContent extends ReputationBase {
      * @param $space : The space where the content should be updated
      * @param bool $forceUpdate : Ignore cache
      */
-    public function updateContentReputation($container, $forceUpdate = false) {
-        $spaceSettings = ReputationBase::getSpaceSettings($container);
-        $spaceContent = ReputationBase::getContentFromSpace($container);        
+    public function updateContentReputation($space, $forceUpdate = false) {
+        $spaceSettings = ReputationBase::getSpaceSettings($space);
+        $spaceContent = ReputationBase::getContentFromSpace($space);        
         $lambda_short = $spaceSettings['lambda_short'];
         $lambda_long = $spaceSettings['lambda_long'];
 
         foreach ($spaceContent as $content) {
 
-            $cacheId = 'reputation_space_content' . '_' . $container->wall_id . '_' . $content->id;
+            $cacheId = 'reputation_space_content' . '_' . $space->id . '_' . $content->id;
             $contentReputation = Yii::$app->cache->get($cacheId);
 
             if ($contentReputation === false || $forceUpdate === true) {
@@ -105,7 +105,7 @@ class ReputationContent extends ReputationBase {
                     $contentReputation->content_id = $content->id;
                     $contentReputation->created_by = $content->created_by;
                 }
-                $score = ReputationContent::calculateContentReputationScore($content, $container, $forceUpdate);
+                $score = ReputationContent::calculateContentReputationScore($content, $space, $forceUpdate);
                 $contentReputation->score = $score;
                 $timePassed = ReputationContent::getTimeInHoursSinceContentCreation($content->created_at);
                 $contentReputation->score_long = ReputationContent::getDecayedScore($score, $timePassed, $lambda_long);

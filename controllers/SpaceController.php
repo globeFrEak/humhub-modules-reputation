@@ -19,6 +19,8 @@ use humhub\modules\content\components\ContentContainerController;
 
 class SpaceController extends ContentContainerController {
 
+    
+    public $hideSidebar = false;
     /**
      * @inheritdoc
      */

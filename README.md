@@ -1,10 +1,10 @@
-## Reputation module for HumHub [working on 1.1.x (Yii2)]
+## Reputation module for HumHub [working on 1.2.x (Yii2)]
 ### Under Development - please report issues!
 
 This module integrates a reputation system into HumHub.
 
 ##About
-__Author:__ Anton Kurnitzky / Philipp Horna (Port to Humhub 1.1.x)
+__Author:__ Anton Kurnitzky / Philipp Horna (Port to Humhub 1.2.x)
 
 This module was developed as part of my master thesis at the [Technische Hochschule Nürnberg](http://www.th-nuernberg.eu).
 It's default settings are designed to work for a social network in an educational context. By customizing the settings you can probably use this in any other context too.

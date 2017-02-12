@@ -117,7 +117,7 @@ class Events extends \yii\base\Object {
      * @param type $event
      */
     public static function onSpaceDelete($event) {
-        foreach (ReputationUser::findAll(['wall_id' => $event->sender->contentcontainer_id]) as $reputationSpace) {
+        foreach (ReputationUser::findAll(['id' => $event->sender->contentcontainer_id]) as $reputationSpace) {
             $reputationSpace->delete();
         }
     }

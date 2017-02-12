@@ -9,7 +9,7 @@
  * @property integer $visibility
  * @property integer $user_id
  * @property integer $space_id
- * @property integer $wall_id
+ * @property integer $contentcontainer_id
  * @property string $created_at
  * @property integer $created_by
  * @property string $updated_at
@@ -42,8 +42,8 @@ class ReputationUser extends ReputationBase {
      */
     public function rules() {
         return array(
-            [['value', 'visibility', 'user_id', 'space_id', 'wall_id'], 'required'],
-            [['value', 'visibility', 'user_id', 'space_id', 'wall_id', 'created_by', 'updated_by'], 'integer',],
+            [['value', 'visibility', 'user_id', 'space_id', 'contentcontainer_id'], 'required'],
+            [['value', 'visibility', 'user_id', 'space_id', 'contentcontainer_id', 'created_by', 'updated_by'], 'integer',],
             [['created_at', 'updated_at'], 'safe']
         );
     }
@@ -68,7 +68,7 @@ class ReputationUser extends ReputationBase {
             'visibility' => 'Visibility',
             'user_id' => 'User',
             'space_id' => 'Space ID',
-            'wall_id' => 'ContentContainer wall_id',
+            'contentcontainer_id' => 'ContentContainer ID',
             'created_at' => 'Created At',
             'created_by' => 'Created By',
             'updated_at' => 'Updated At',
@@ -81,42 +81,42 @@ class ReputationUser extends ReputationBase {
      * @param $space : The space to check
      * @param bool $forceUpdate : Ignore cache
      */
-    public function updateUserReputation($container, $forceUpdate = false) {
+    public function updateUserReputation($space, $forceUpdate = false) {
 
         // get all users from this space
-        $attributes = array('space_id' => $container->id);
+        $attributes = array('space_id' => $space->id);
         $spaceUsers = Membership::findAll($attributes);
 
         foreach ($spaceUsers as $user) {
 
-            $cacheId = 'reputation_space_user' . '_' . $container->wall_id . '_' . $user->user_id;
+            $cacheId = 'reputation_space_user' . '_' . $space->id . '_' . $user->user_id;
             $userReputation = Yii::$app->cache->get($cacheId);
 
             if ($userReputation === false || $forceUpdate === true) {
 
                 // get all reputation_user objects from this space
-                $condition = array('user_id' => $user->user_id, 'space_id' => $container->id);
+                $condition = array('user_id' => $user->user_id, 'space_id' => $space->id);
                 $userReputation = ReputationUser::findOne($condition);
 
                 if ($userReputation == null) {
                     // Create new reputation_user entry
                     $userReputation = new ReputationUser;
                     $userReputation->user_id = $user->user_id;
-                    $userReputation->space_id = $container->id;
-                    $userReputation->wall_id = $container->wall_id;
+                    $userReputation->space_id = $space->id;
+                    $userReputation->contentcontainer_id = $space->contentcontainer_id;
                     $userReputation->visibility = 0;
                     $userReputation->created_by = $user->user_id;
                 }
-                $userReputation->value = ReputationUser::calculateUserReputationScore($user->user_id, $container, $forceUpdate);
+                $userReputation->value = ReputationUser::calculateUserReputationScore($user->user_id, $space, $forceUpdate);
                 $userReputation->updated_at = date('Y-m-d H:i:s');
-                $userReputation->updated_by = $container->updated_by;
+                $userReputation->updated_by = $space->updated_by;
                 $userReputation->save();
 
                 Yii::$app->cache->set($cacheId, $userReputation, ReputationBase::CACHE_TIME_SECONDS);
             }
         }
 
-        ReputationUser::deleteMissingUsers($container->wall_id);
+        ReputationUser::deleteMissingUsers($space->id);
     }
 
     /**
