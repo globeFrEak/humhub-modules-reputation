@@ -64,15 +64,13 @@ use humhub\modules\reputation\models\ReputationUser;
                 <!-- END: Reputation Results -->
             </ul>  
         <?php else: ?>
-            <div class="media">          
-                <div class="media-body">         
-                    <h4 class="media-heading"><?php echo Yii::t('ReputationModule.widgets_views_spaceUserReputationWidget', 'No Reputation found!'); ?>
-                        <i class="fa fa-info-circle tt text-break" data-toggle="tooltip" data-placement="top" 
-                           title="<?php echo Yii::t('ReputationModule.widgets_views_spaceUserReputationWidget', 'You can only see reputation the user shares.'); ?>"></i>
-                    </h4>        
-                    <div><?php echo Yii::t('ReputationModule.widgets_views_spaceUserReputationWidget', 'Change your settings to share your Reputation on this Space'); ?></div>
-                </div>
-            </div>
+            <div class="panel-body">    
+                <h5><?php echo Yii::t('ReputationModule.widgets_views_spaceUserReputationWidget', 'No Reputation found!'); ?>
+                    <i class="fa fa-info-circle tt text-break" data-toggle="tooltip" data-placement="top" 
+                       title="<?php echo Yii::t('ReputationModule.widgets_views_spaceUserReputationWidget', 'You can only see reputation the user shares.'); ?>"></i>
+                </h5>        
+                <div><?php echo Yii::t('ReputationModule.widgets_views_spaceUserReputationWidget', 'Change your settings to share your Reputation on this Space'); ?></div>
+            </div>          
         <?php endif; ?>
         <div class="panel-body">
             <?php if (count($users) == $maxUsers) : ?>

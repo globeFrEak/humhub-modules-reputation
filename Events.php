@@ -142,6 +142,7 @@ class Events extends \yii\base\Object {
         if ($event->sender->user !== null && $event->sender->user->isModuleEnabled('reputation')) {
             $event->sender->addItem(array(
                 'label' => Yii::t('ReputationModule.base', 'User Reputation'),
+                'icon' => '<i class="fa fa-book"></i>',
                 'group' => 'profile',
                 'url' => $event->sender->user->createUrl('/reputation/profile/config'),
                 'isActive' => (Yii::$app->controller->module && Yii::$app->controller->module->id == 'reputation' && Yii::$app->controller->id == 'profile' && Yii::$app->controller->action->id == 'config'),
