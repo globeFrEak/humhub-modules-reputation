@@ -3,6 +3,8 @@
 
 This module integrates a reputation system into HumHub.
 
+You can find a newer version here: https://github.com/globeFrEak/humhub-modules-reputation
+
 ##About
 __Author:__ Anton Kurnitzky / Philipp Horna (Port to Humhub 1.2.x)
 
