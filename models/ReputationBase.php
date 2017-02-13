@@ -51,14 +51,11 @@ class ReputationBase extends \humhub\components\ActiveRecord {
         $cacheId = 'posts_created_cache' . '_' . $space->id;
         $spaceContent = Yii::$app->cache->get($cacheId);
         if ($spaceContent === false || $forceUpdate === true) {
-
             $condition = 'contentcontainer_id=:spaceId AND object_model!=:activity';
-            $params = [':spaceId' => $space->id, ':activity' => 'humhub\modules\activity\models\Activity'];
-            $query = Content::find()
-                    ->where($condition, $params)
-                    ->all();
-
-            Yii::$app->cache->set($cacheId, $spaceContent = $query, ReputationContent::CACHE_TIME_SECONDS);
+            $params = [':spaceId' => $space->contentcontainer_id, ':activity' => 'humhub\modules\activity\models\Activity'];
+            $query = Content::find()->where($condition, $params);
+            $spaceContent = $query->all();
+            Yii::$app->cache->set($cacheId, $spaceContent, ReputationContent::CACHE_TIME_SECONDS);
         }
         return $spaceContent;
     }
@@ -75,14 +72,13 @@ class ReputationBase extends \humhub\components\ActiveRecord {
      */
     public function getCommentsFromContent(Content $content, $userId, $cacheId, $countOwnComments = false, $forceUpdate = false) {
         $comments = Yii::$app->cache->get($cacheId);
-
         if ($comments === false || $forceUpdate === true) {
             $object = $content->object_model;
-            $objectModel = $object::tableName();
-            $comments = array();
+            $objectModelTable = $object::tableName();
+            $comments = [];
             try {
                 $query = Comment::find();
-                $query->leftJoin($objectModel . ' AS o', 'comment.object_id = o.id');
+                $query->leftJoin($objectModelTable . ' AS o', 'comment.object_id = o.id');
                 $query->leftJoin('content AS ct', 'o.id = ct.object_id');
 
                 if ($countOwnComments === true) {
@@ -94,12 +90,11 @@ class ReputationBase extends \humhub\components\ActiveRecord {
                 $query->where($condition, $params);
                 $comments = $query->all();
 
-                Yii::$app->cache->set($cacheId, $query, ReputationBase::CACHE_TIME_SECONDS);
+                Yii::$app->cache->set($cacheId, $comments, ReputationBase::CACHE_TIME_SECONDS);
             } catch (Exception $e) {
-                Yii::trace('Couldn\'t count comments from object model: ' . $objectModel);
+                Yii::trace('Couldn\'t count comments from object model: ' . $objectModelTable);
             }
         }
-
         return $comments;
     }
 
@@ -110,7 +105,6 @@ class ReputationBase extends \humhub\components\ActiveRecord {
      */
     public function getSpaceSettings($container) {
         $getSettings = ContentContainerSetting::findAll(['module_id' => 'reputation', 'contentcontainer_id' => $container->id]);
-
         if (count($getSettings) > 0) {
             foreach ($getSettings as $setting) {
                 $spaceSettings[$setting['name']] = $setting['value'];
@@ -126,7 +120,7 @@ class ReputationBase extends \humhub\components\ActiveRecord {
      * @param $container Object 
      * @return $spaceSettings array
      */
-    protected function setSpaceSettings($container) {       
+    protected function setSpaceSettings($container) {
         $spaceSettings = [
             'functions' => self::DEFAULT_FUNCTION,
             'logarithm_base' => self::DEFAULT_LOGARITHM_BASE,
@@ -141,7 +135,7 @@ class ReputationBase extends \humhub\components\ActiveRecord {
             'lambda_long' => self::DEFAULT_LAMBDA_SHORT,
             'lambda_short' => self::DEFAULT_LAMBDA_LONG,
             'ranking_new_period' => self::DEFAULT_RANKING_NEW_PERIOD];
-        
+
         foreach ($spaceSettings as $name => $value) {
             Setting::Set($container->id, $name, $value, 'reputation');
         }
@@ -159,26 +153,24 @@ class ReputationBase extends \humhub\components\ActiveRecord {
      */
     protected function getLikesFromContent(Content $content, $userId, $cacheId, $forceUpdate = false) {
         $likes = Yii::$app->cache->get($cacheId);
-
         if ($likes === false || $forceUpdate === true) {
             $object = $content->object_model;
-            $objectModel = $object::tableName();
-            $likes = array();
+            $objectModelTable = $object::tableName();
+            $likes = [];
             try {
                 $query = Like::find();
-                $query->leftJoin($objectModel . ' AS p', 'like.object_id = p.id');
+                $query->leftJoin($objectModelTable . ' AS p', 'like.object_id = p.id');
                 $query->leftJoin('content AS ct', 'p.id = ct.object_id');
                 $condition = 'ct.id=:contentId AND like.created_by!=:userId AND ct.created_by=:userId AND like.object_model=:objectModel AND ct.object_model=:objectModel';
-                $params = array(':contentId' => $content->id, ':objectModel' => $objectModel, ':userId' => $userId);
+                $params = array(':contentId' => $content->id, ':objectModel' => $object, ':userId' => $userId);
                 $query->where($condition, $params);
-                $query->all();
+                $likes = $query->all();
 
-                Yii::$app->cache->set($cacheId, $query, ReputationBase::CACHE_TIME_SECONDS);
+                Yii::$app->cache->set($cacheId, $likes, ReputationBase::CACHE_TIME_SECONDS);
             } catch (Exception $e) {
-                Yii::trace('Couldn\'t fetch likes from object model: ' . $objectModel);
+                Yii::trace('Couldn\'t fetch likes from object model: ' . $objectModelTable);
             }
         }
-
         return $likes;
     }
 
@@ -193,12 +185,10 @@ class ReputationBase extends \humhub\components\ActiveRecord {
      */
     protected function getFavoritesFromContent(Content $content, $userId, $cacheId, $forceUpdate = false) {
         $favorites = Yii::$app->cache->get($cacheId);
-
         if ($favorites === false || $forceUpdate === true) {
             $object = $content->object_model;
-            $objectModel = $object::tableName();
-            $favorites = array();
-
+            $objectModelTable = $object::tableName();
+            $favorites = [];
             // not possible to favorite comments atm
             if (strcmp($objectModel, 'comment') == 0) {
                 return array();
@@ -206,15 +196,15 @@ class ReputationBase extends \humhub\components\ActiveRecord {
 
             try {
                 $query = Favorite::find();
-                $query->leftJoin($objectModel . ' AS p', 'favorite.object_id = p.id');
+                $query->leftJoin($objectModelTable . ' AS p', 'favorite.object_id = p.id');
                 $query->leftJoin('content AS ct', 'p.id = ct.object_id');
 
                 $condition = 'ct.id=:contentId AND favorite.created_by!=:userId AND ct.created_by=:userId AND favorite.object_model=:objectModel AND ct.object_model=:objectModel';
-                $params = array(':contentId' => $content->id, ':objectModel' => $objectModel, ':userId' => $userId);
+                $params = array(':contentId' => $content->id, ':objectModel' => $object, ':userId' => $userId);
                 $query->where($condition, $params);
-                $query->all();
+                $favorites = $query->all();
 
-                Yii::$app->cache->set($cacheId, $query, ReputationBase::CACHE_TIME_SECONDS);
+                Yii::$app->cache->set($cacheId, $favorites, ReputationBase::CACHE_TIME_SECONDS);
             } catch (Exception $e) {
                 Yii::trace('Couldn\'t fetch favorites from object model: ' . $objectModel);
             }

@@ -1,7 +1,8 @@
 <?php
 
 /**
- * @author Anton Kurnitzky (v0.11) & Philipp Horna (v0.20+) */
+ * @author Anton Kurnitzky (v0.11) & Philipp Horna (v0.20+) 
+ */
 
 namespace humhub\modules\reputation;
 
@@ -12,7 +13,6 @@ use humhub\modules\user\models\User;
 use humhub\modules\reputation\models\ReputationBase;
 use humhub\modules\reputation\models\ReputationUser;
 use humhub\modules\reputation\models\ReputationContent;
-use humhub\modules\content\models\ContentContainerSetting;
 
 class Events extends \yii\base\Object {
 

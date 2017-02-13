@@ -130,9 +130,9 @@ class ReputationUser extends ReputationBase {
      * @return int: User reputation score inside this space
      */
     private function calculateUserReputationScore($userId, $container, $forceUpdate = false) {
-        $spaceSettings = ReputationBase::getSpaceSettings($container); 
-        $dailyLimit = $spaceSettings['daily_limit']; 
-        $decreaseWeighting = $spaceSettings['decrease_weighting'];  
+        $spaceSettings = ReputationBase::getSpaceSettings($container);
+        $dailyLimit = $spaceSettings['daily_limit'];
+        $decreaseWeighting = $spaceSettings['decrease_weighting'];
 
         $spaceContent = ReputationBase::getContentFromSpace($container, $forceUpdate);
 
@@ -256,21 +256,18 @@ class ReputationUser extends ReputationBase {
      */
     public function GetCommentsGeneratedByUser($userId, Content $content, $forceUpdate = false) {
         $cacheId = 'comments_generated_cache_' . $userId . '_' . $content->id;
-
         $commentsGenerated = Yii::$app->cache->get($cacheId);
-
         if ($commentsGenerated === false || $forceUpdate === true) {
             $object = $content->object_model;
             $objectModel = $object::tableName();
-            $commentsGenerated = array();
+            $commentsGenerated = [];
             try {
                 $query = Comment::find();
                 $query->leftJoin($objectModel . ' AS o', 'comment.object_id = o.id');
                 $query->leftJoin('content AS ct', 'o.id = ct.object_id');
                 $params = array(':contentId' => $content->id, ':userId' => $userId);
-                $query->where('ct.id=:contentId AND c.created_by=:userId AND c.object_model=ct.object_model', $params);
+                $query->where('ct.id=:contentId AND comment.created_by=:userId AND comment.object_model=ct.object_model', $params);
                 $commentsGenerated = $query->all();
-
                 Yii::$app->cache->set($cacheId, $commentsGenerated, ReputationBase::CACHE_TIME_SECONDS);
             } catch (Exception $e) {
                 Yii::trace('Couldn\'t count generated comments from object model: ' . $objectModel);
@@ -294,17 +291,19 @@ class ReputationUser extends ReputationBase {
         $commentsLiked = Yii::$app->cache->get($cacheId);
         if ($commentsLiked === false || $forceUpdate === true) {
             $object = $content->object_model;
-            $objectModel = $object::tableName();
-            $commentsLiked = array();
+            $commentsLiked = [];
             try {
+                $params = array(':contentId' => $content->id, ':userId' => $userId, ':objectModel' => $object);
                 $query = Like::find();
-                $query->leftJoin('comment AS c', 'c.id = like.object_id');
-                $query->leftJoin($objectModel . ' AS o', 'c.object_id = o.id');
-                $query->leftJoin('content AS ct', 'o.id = ct.object_id');
-                $params = array(':contentId' => $content->id, ':userId' => $userId);
-                $query->where('like.object_model=\'humhub\modules\comment\models\Comment\' AND like.created_by!=:userId AND ct.id=:contentId AND c.created_by=:userId AND c.object_model=ct.object_model', $params);
-                $commentsLiked = $query->all();
-
+                $query->leftJoin("comment", "like.object_id = comment.id");
+                $query->leftJoin("content", "comment.id = content.object_id");
+                $query->where(
+                        'like.object_model=\'humhub\\\modules\\\comment\\\models\\\Comment\' '
+                        . 'AND like.created_by!=:userId '
+                        . 'AND content.id=:contentId '
+                        . 'AND comment.created_by=:userId '
+                        . 'AND comment.object_model=content.object_model', $params);
+                $commentsLiked = $query->all();               
                 Yii::$app->cache->set($cacheId, $commentsLiked, ReputationBase::CACHE_TIME_SECONDS);
             } catch (Exception $e) {
                 Yii::trace('Couldn\'t count generated comments from object model: ' . $objectModel);
@@ -349,5 +348,6 @@ class ReputationUser extends ReputationBase {
                 Membership::delete();
             }
         }
-    }  
+    }
+
 }

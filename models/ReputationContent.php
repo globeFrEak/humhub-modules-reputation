@@ -90,7 +90,6 @@ class ReputationContent extends ReputationBase {
         $lambda_long = $spaceSettings['lambda_long'];
 
         foreach ($spaceContent as $content) {
-
             $cacheId = 'reputation_space_content' . '_' . $space->id . '_' . $content->id;
             $contentReputation = Yii::$app->cache->get($cacheId);
 
@@ -118,19 +117,7 @@ class ReputationContent extends ReputationBase {
             }
         }
     }
-
-    /**
-     * Returns the static model of the specified AR class.
-     * Please note that you should have this exact method in all your CActiveRecord descendants!
-     * @param string $className active record class name.
-     * @return ReputationContent the static model class
-     *
-      public static function model($className = __CLASS__)
-      {
-      return parent::model($className);
-      }
-     * 
-     */
+    
     /*
      * Calculate the reputation score for all content objects inside this space
      * Use the count of likes, favorites and comments and the reputation settings to calculate this
@@ -142,13 +129,12 @@ class ReputationContent extends ReputationBase {
         $spaceSettings = ReputationBase::getSpaceSettings($container);
         $cacheId = 'likes_earned_cache_' . $content->id;
         $likes = ReputationBase::getLikesFromContent($content, $content->created_by, $cacheId, $forceUpdate);
-        if ($container->isModuleEnabled('favorite')) {
-            $scoreCount = 1;
+        if ($container->isModuleEnabled('favorite')) {           
             // now count the favorites this content earned from other users
             $cacheId = 'favorites_earned_cache_' . $content->id;
             $favorites = ReputationBase::getFavoritesFromContent($content, $content->created_by, $cacheId, $forceUpdate);
         } else {
-            $favorites = array();
+            $favorites = [];
         }
         $cacheId = 'comments_earned_cache_' . $content->id;
         $comments = ReputationBase::getCommentsFromContent($content, $content->created_by, $cacheId, true, $forceUpdate);
