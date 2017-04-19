@@ -17,8 +17,7 @@ use humhub\modules\reputation\models\ReputationUser;
 use humhub\modules\reputation\models\SpaceSettings;
 use humhub\modules\content\components\ContentContainerController;
 
-class SpaceController extends ContentContainerController {
-
+class SpaceController extends ContentContainerController {  
     
     public $hideSidebar = false;
     /**
@@ -105,13 +104,15 @@ class SpaceController extends ContentContainerController {
         return $this->render('settings', array('model' => $form, 'space' => $space));
     }
 
-    public function actionStats() {
+    public function actionStats() {             
+        
         $space = $this->getSpace();
         ReputationUser::updateUserReputation($space);
         $params = [':spaceId' => $space->id];
-        $reputations = ReputationUser::find()->where('space_id=:spaceId AND visibility = 1', $params)->all();
-        $itemCount = count($reputations);
-        $pagination = new \yii\data\Pagination(['totalCount' => $itemCount]);
+        $query = ReputationUser::find()->where('space_id=:spaceId AND visibility = 1', $params);       
+        $pagination = new \yii\data\Pagination(['totalCount' => $query->count()]);
+        $reputations = $query->offset($pagination->offset)->limit($pagination->limit)->all();
+        
         $module = Yii::$app->getModule('reputation');
         $function = $module->settings->space()->get('functions', ReputationBase::DEFAULT_FUNCTION);
         return $this->render('stats', array(

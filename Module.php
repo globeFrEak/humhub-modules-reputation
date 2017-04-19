@@ -30,8 +30,24 @@ class Module extends ContentContainerModule {
     /**
      * @inheritdoc
      */
-    public function getConfigUrl() {
-        return Url::to(['/reputation/admin/config']);
+//    public function getConfigUrl() {
+//        return Url::to(['/reputation/admin/config']);
+//    }
+    
+     /**
+     * @inheritdoc
+     */
+     public function enable()
+    {
+       parent::enable();
+    }
+    
+      /**
+     * @inheritdoc
+     */
+     public function disable()
+    {
+       parent::disable();
     }
 
     /**
