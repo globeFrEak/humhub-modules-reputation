@@ -104,7 +104,7 @@ class ReputationUser extends ReputationBase {
                     $userReputation->user_id = $user->user_id;
                     $userReputation->space_id = $space->id;
                     $userReputation->contentcontainer_id = $space->contentcontainer_id;
-                    $userReputation->visibility = 0;
+                    $userReputation->visibility = 1;
                     $userReputation->created_by = $user->user_id;
                 }
                 $userReputation->value = ReputationUser::calculateUserReputationScore($user->user_id, $space, $forceUpdate);
