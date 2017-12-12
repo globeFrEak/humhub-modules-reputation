@@ -6,14 +6,14 @@
 
 namespace humhub\modules\reputation;
 
-use \yii;
-use yii\helpers\Url;
+use Yii;
 use humhub\modules\space\models\Space;
 use humhub\modules\user\models\User;
 use humhub\modules\content\components\ContentContainerActiveRecord;
 use humhub\modules\content\components\ContentContainerModule;
 use humhub\modules\reputation\models\ReputationUser;
 use humhub\modules\reputation\models\ReputationContent;
+use yii\helpers\Url;
 
 class Module extends ContentContainerModule {
 
@@ -30,9 +30,9 @@ class Module extends ContentContainerModule {
     /**
      * @inheritdoc
      */
-//    public function getConfigUrl() {
-//        return Url::to(['/reputation/admin/config']);
-//    }
+    public function getConfigUrl() {
+        return Url::to(['/reputation/admin/']);
+    }
     
      /**
      * @inheritdoc

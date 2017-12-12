@@ -82,8 +82,8 @@ class SpaceController extends ContentContainerController {
             $form->lambda_short = $module->settings->space()->set('lambda_short', $form->lambda_short);
             $form->lambda_long = $module->settings->space()->set('lambda_long', $form->lambda_long);
 
-            ReputationContent::updateContentReputation($space, true);
-            ReputationUser::updateUserReputation($space, true);
+            //ReputationContent::updateContentReputation($space, true);
+            //ReputationUser::updateUserReputation($space, true);
 
             $this->redirect(['/reputation/space/settings', 'sguid' => $space->guid]);
         } else {
@@ -107,9 +107,8 @@ class SpaceController extends ContentContainerController {
     public function actionStats() {             
         
         $space = $this->getSpace();
-        ReputationUser::updateUserReputation($space);
         $params = [':spaceId' => $space->id];
-        $query = ReputationUser::find()->where('space_id=:spaceId AND visibility = 1', $params);       
+        $query = ReputationUser::find()->where('space_id=:spaceId AND visibility = 1', $params)->orderBy('value DESC');       
         $pagination = new \yii\data\Pagination(['totalCount' => $query->count()]);
         $reputations = $query->offset($pagination->offset)->limit($pagination->limit)->all();
         

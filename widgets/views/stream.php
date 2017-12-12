@@ -48,18 +48,26 @@ $this->registerJsVar('defaultStreamSort', ($defaultStreamSort != '') ? $defaultS
             <a class="stream-sorting dropdown-toggle" data-toggle="dropdown" href="#"><?php echo Yii::t('ContentModule.widgets_views_stream', 'Sorting'); ?>
                 <b class="caret"></b></a>
             <ul class="dropdown-menu">
-                <li><a href="#" class="wallSorting" id="sorting_h"><i
+                <li>
+                    <a href="#" class="wallSorting" id="sorting_h"><i
                             class="fa fa-check-square-o"></i> <?php echo Yii::t('ReputationModule.widgets_views_stream', 'Hot'); ?>
-                    </a></li>
-                <li><a href="#" class="wallSorting" id="sorting_t"><i
+                    </a>
+                </li>
+                <li>
+                    <a href="#" class="wallSorting" id="sorting_t"><i
                             class="fa fa-square-o"></i> <?php echo Yii::t('ReputationModule.widgets_views_stream', 'Top'); ?>
-                    </a></li>
-                <li><a href="#" class="wallSorting" id="sorting_n"><i
+                    </a>
+                </li>
+                <li>
+                    <a href="#" class="wallSorting" id="sorting_n"><i
                             class="fa fa-square-o"></i> <?php echo Yii::t('ReputationModule.widgets_views_stream', 'New'); ?>
-                    </a></li>
-                <li><a href="#" class="wallSorting" id="sorting_r"><i
+                    </a>
+                </li>
+                <li>
+                    <a href="#" class="wallSorting" id="sorting_r"><i
                             class="fa fa-square-o"></i> <?php echo Yii::t('ReputationModule.widgets_views_stream', 'Rising'); ?>
-                    </a></li>
+                    </a>
+                </li>   
             </ul>
         </li>
     </ul>

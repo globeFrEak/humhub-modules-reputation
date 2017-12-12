@@ -31,8 +31,7 @@ class Events extends \yii\base\Object {
         foreach ($spaces as $space) {           
             if ($space->isModuleEnabled('reputation')) {
                 $cronJobEnabled = ReputationBase::getSpaceSettings($space);
-                if ($cronJobEnabled['cron_job'] = 1) {                         
-                    self::onSpaceEnabledAsDefault($space);
+                if ($cronJobEnabled['cron_job'] = 1) {
                     ReputationUser::updateUserReputation($space, true);
                     ReputationContent::updateContentReputation($space, true);
                     Console::updateProgress(++$processed, $count_spaces);
@@ -40,53 +39,18 @@ class Events extends \yii\base\Object {
             }
         }
         Console::endProgress(true);
-        $controller->stdout('done - ' . $processed . ' spaces checked.' . PHP_EOL, Console::FG_GREEN);
+        $controller->stdout('done - ' . $processed . ' Spaces checked.' . PHP_EOL, Console::FG_GREEN);
 
         $users = User::find()->all();
         $count_users = count($spaces);
         Console::startProgress($processed, $count_users, '[Module] calculate REPUTATION for Users...', false);
         foreach ($users as $user) {
             if ($user->isModuleEnabled('reputation')) {
-                self::onUserEnabledAsDefault($user);
                 Console::updateProgress(++$processed, $count_users);
             }
         }
         Console::endProgress(true);
-        $controller->stdout('done - ' . $processed . ' spaces checked.' . PHP_EOL, Console::FG_GREEN);
-    }
-
-    /**
-     * Set Reputation Module when it is enabled as default on the Space
-     *
-     * @param $space Object
-     */
-    public static function onSpaceEnabledAsDefault($space) {
-        $moduleEnabled = \humhub\modules\space\models\Module::findOne(['space_id' => $space->id, 'module_id' => 'reputation']);
-        $moduleAsDefaultOn = \humhub\modules\space\models\Module::find()->where(['space_id' => 0, 'module_id' => 'reputation', 'state' => 1])->orWhere(['space_id' => 0, 'module_id' => 'reputation', 'state' => 2])->one();
-        if ($moduleEnabled === NULL && $moduleAsDefaultOn != NULL) {
-            $enableModule = new \humhub\modules\space\models\Module();
-            $enableModule->module_id = 'reputation';
-            $enableModule->space_id = $space->id;
-            $enableModule->state = $moduleAsDefaultOn->state;
-            $enableModule->save();
-        }
-    }
-
-    /**
-     * Set Reputation Module when it is enabled as default on the User
-     *
-     * @param $user Object
-     */
-    public static function onUserEnabledAsDefault($user) {
-        $moduleEnabled = \humhub\modules\user\models\Module::findOne(['user_id' => $user->id, 'module_id' => 'reputation']);
-        $moduleAsDefaultOn = \humhub\modules\user\models\Module::find()->where(['user_id' => 0, 'module_id' => 'reputation', 'state' => 1])->orWhere(['user_id' => 0, 'module_id' => 'reputation', 'state' => 2])->one();
-        if ($moduleEnabled === NULL && $moduleAsDefaultOn != NULL) {
-            $enableModule = new \humhub\modules\user\models\Module();
-            $enableModule->module_id = 'reputation';
-            $enableModule->user_id = $user->id;
-            $enableModule->state = $moduleAsDefaultOn->state;
-            $enableModule->save();
-        }
+        $controller->stdout('done - ' . $processed . ' Users checked.' . PHP_EOL, Console::FG_GREEN);
     }
 
     /**

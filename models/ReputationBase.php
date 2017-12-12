@@ -105,11 +105,8 @@ class ReputationBase extends \humhub\components\ActiveRecord {
      */
     public function getSpaceSettings($container) {
         
-        // thanks to joseph-kuruvilla (https://github.com/joseph-kuruvilla)
-        $module = Yii::$app->getModule('reputation');
-        $contentContainerId=$module->settings->space()->contentContainer->contentContainerRecord->id;
-        $getSettings = ContentContainerSetting::findAll(['module_id' => 'reputation', 'contentcontainer_id' => $contentContainerId]);
-        
+        $getSettings = ContentContainerSetting::findAll(['module_id' => 'reputation', 'contentcontainer_id' => $container->contentcontainer_id]);
+
         if (count($getSettings) > 0) {
             foreach ($getSettings as $setting) {
                 $spaceSettings[$setting['name']] = $setting['value'];

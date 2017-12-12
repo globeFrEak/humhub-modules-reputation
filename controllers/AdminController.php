@@ -11,25 +11,16 @@ use Yii;
 use yii\web\HttpException;
 use humhub\modules\reputation\models\ReputationUser;
 use humhub\modules\reputation\models\ReputationBase;
-use humhub\modules\content\components\ContentContainerController;
+use humhub\modules\reputation\models\ReputationContent;
+use humhub\modules\admin\components\Controller;
+use humhub\modules\space\models\Space;
 
 /**
  * All user reputation actions a admin can use and see
  *
  * @author Anton Kurnitzky
  */
-class AdminController extends ContentContainerController {
-    /*
-     * Allow only space admins to see configuration
-     */
-
-    public function beforeAction($action) {
-        if (!$this->contentContainer->permissionManager->can(new \humhub\modules\content\permissions\ManageContent())) {
-            throw new HttpException(400, 'Access denied!');
-        }
-        return parent::beforeAction($action);
-    }
-
+class AdminController extends Controller {
     /*
      * Initialize user reputation overview
      *
@@ -38,36 +29,25 @@ class AdminController extends ContentContainerController {
      */
 
     public function actionIndex() {
-        $forceUpdate = false;
-        if (Yii::$app->request->get('forceUpdate') === 1) {
-            $forceUpdate = true;
-        }
-        $space = $this->contentContainer;
-        ReputationUser::updateUserReputation($space, $forceUpdate);
-        $params = [':spaceId' => $space->id];
-        $query = ReputationUser::find();
-        $query->where('space_id=:spaceId', $params);
-        $query->orderBy('reputation_user.value DESC');
 
-        $countQuery = clone $query;
-        $itemCount = $countQuery->count();
-        $pagination = new \yii\data\Pagination(['totalCount' => $itemCount, 'pageSize' => 10]);
-        $query->offset($pagination->offset)->limit($pagination->limit);
+        $query = ReputationUser::find()->orderBy('reputation_user.value DESC');
 
         $reputations = $query->all();
 
-        $module = Yii::$app->getModule('reputation');
-        $function = $module->settings->space()->get('functions', ReputationBase::DEFAULT_FUNCTION);
-
-        $lastUpdatedBefore = $this->GetLastUpdateTimeInMinutes($reputations);
-
         return $this->render('index', array(
-                    'function' => $function,
-                    'space' => $space,
                     'reputations' => $reputations,
-                    'pagination' => $pagination,
-                    'lastUpdatedBefore' => $lastUpdatedBefore,
         ));
+    }
+
+    public function actionRecalculate() {
+        $spaces = Space::find()->all();
+        foreach ($spaces as $space) {
+            if ($space->isModuleEnabled('reputation')) {
+                ReputationUser::updateUserReputation($space, true);
+                ReputationContent::updateContentReputation($space, true);
+            }
+        }
+       return $this->redirect(['/reputation/admin']);
     }
 
     /**

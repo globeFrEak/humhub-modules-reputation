@@ -3,7 +3,7 @@
     "name": "Reputation",
     "description": "This Module Integrates A Reputation System Into HumHub. It Works With HumHub 1.2.x +.",
     "keywords": ["content", "reputation", "space", "user"],
-    "version": "0.7.0",
+    "version": "0.7.1",
     "time": "2017-02-05",
     "authors": [
         {

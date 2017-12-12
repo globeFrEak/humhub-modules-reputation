@@ -7,7 +7,7 @@
 namespace humhub\modules\reputation\widgets;
 
 use humhub\components\Widget;
-use \Yii;
+use Yii;
 use humhub\modules\reputation\models\ReputationUser;
 use humhub\modules\reputation\models\ReputationBase;
 
@@ -31,5 +31,3 @@ class SpaceUserReputationWidget extends Widget {
     }
 
 }
-
-?>
